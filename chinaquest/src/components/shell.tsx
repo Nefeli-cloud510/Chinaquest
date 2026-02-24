@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ReactNode } from "react";
-import { getSessionFromCookie, getUserById } from "@/lib/auth";
 import { cx } from "./ui";
 
 function NavItem(props: {
@@ -28,9 +27,8 @@ export async function SiteShell(props: {
   active: "home" | "about" | "routes" | "badges" | "admin";
   children: ReactNode;
 }) {
-  const session = await getSessionFromCookie();
-  const user = session ? await getUserById(session.userId) : null;
-  const isAdmin = user?.role === "admin";
+  const user = null;
+  const isAdmin = false;
 
   return (
     <div className="min-h-dvh bg-[color:var(--cq-bg)]">

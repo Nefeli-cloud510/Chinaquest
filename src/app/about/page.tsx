@@ -1,9 +1,10 @@
 import { SiteShell } from "@/components/shell";
 import { Card, Pill } from "@/components/ui";
 
-export default function AboutPage() {
+// 函数名改为首页的名称（HomePage），active改为首页标识（比如"home"）
+export default function HomePage() {
   return (
-    <SiteShell active="about">
+    <SiteShell active="home"> {/* 把about改成home，匹配导航栏的首页标识 */}
       <div className="grid gap-6">
         <Card>
           <div className="flex flex-wrap items-center gap-2">

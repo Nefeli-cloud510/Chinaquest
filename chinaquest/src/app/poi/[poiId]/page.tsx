@@ -1,16 +1,16 @@
 import { SiteShell } from "@/components/shell";
-import { StartPoiButton } from "@/components/start-poi-button";
 import { Button, Card, Pill } from "@/components/ui";
-import { getPoi, getRoute } from "@/lib/content";
-import { getRun } from "@/lib/run";
+import { getStaticPoi, getStaticRoute, staticContent } from "@/lib/static-content";
+
+export function generateStaticParams() {
+  return staticContent.pois.map((p) => ({ poiId: p.id }));
+}
 
 export default async function PoiPage(props: {
   params: Promise<{ poiId: string }>;
-  searchParams: Promise<{ runId?: string }>;
 }) {
   const { poiId } = await props.params;
-  const { runId } = await props.searchParams;
-  const poi = await getPoi(poiId);
+  const poi = getStaticPoi(poiId);
   if (!poi) {
     return (
       <SiteShell active="routes">
@@ -26,9 +26,7 @@ export default async function PoiPage(props: {
     );
   }
 
-  const route = await getRoute(poi.routeId);
-  const run = runId ? await getRun(runId) : null;
-  const progress = run?.poiProgress.find((p) => p.poiId === poiId)?.status ?? null;
+  const route = getStaticRoute(poi.routeId);
 
   return (
     <SiteShell active="routes">
@@ -41,19 +39,7 @@ export default async function PoiPage(props: {
           <div className="relative grid gap-4">
             <div className="flex flex-wrap items-center gap-2">
               <Pill tone="gold">Stop {poi.order}</Pill>
-              {progress ? (
-                <Pill tone={progress === "completed" ? "gold" : "red"}>
-                  {progress === "completed"
-                    ? "Completed"
-                    : progress === "available"
-                      ? "Available"
-                      : progress === "in_progress"
-                        ? "In progress"
-                        : "Locked"}
-                </Pill>
-              ) : (
-                <Pill>Preview</Pill>
-              )}
+              <Pill>Preview</Pill>
               <Pill>{poi.title.en}</Pill>
             </div>
             <div>
@@ -65,9 +51,8 @@ export default async function PoiPage(props: {
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <StartPoiButton runId={runId} poiId={poiId} />
               <Button
-                href={`/poi/${poiId}/quiz${runId ? `?runId=${encodeURIComponent(runId)}` : ""}`}
+                href={`/poi/${poiId}/quiz`}
                 variant="secondary"
               >
                 Start puzzle
@@ -79,23 +64,13 @@ export default async function PoiPage(props: {
               >
                 Open AR (next phase)
               </Button>
-              {runId ? (
-                <Button
-                  href={`/run/${runId}`}
-                  variant="ghost"
-                  className="border-white/20 text-white hover:bg-white/10"
-                >
-                  Back to progress
-                </Button>
-              ) : (
-                <Button
-                  href={`/routes/${poi.routeId}`}
-                  variant="ghost"
-                  className="border-white/20 text-white hover:bg-white/10"
-                >
-                  Back to route
-                </Button>
-              )}
+              <Button
+                href={`/routes/${poi.routeId}`}
+                variant="ghost"
+                className="border-white/20 text-white hover:bg-white/10"
+              >
+                Back to route
+              </Button>
             </div>
           </div>
         </Card>

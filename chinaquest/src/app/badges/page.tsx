@@ -1,14 +1,9 @@
 import { SiteShell } from "@/components/shell";
 import { Button, Card, Pill } from "@/components/ui";
-import { getContent } from "@/lib/content";
-import { getOrCreateUserIdentity } from "@/lib/identity";
-import { listRunsForUser } from "@/lib/run";
+import { staticContent } from "@/lib/static-content";
 
 export default async function BadgesPage() {
-  const content = await getContent();
-  const { userId } = await getOrCreateUserIdentity();
-  const runs = await listRunsForUser(userId);
-  const earned = new Set(runs.flatMap((r) => r.earnedBadgeIds));
+  const content = staticContent;
 
   return (
     <SiteShell active="badges">
@@ -33,11 +28,11 @@ export default async function BadgesPage() {
               <div className="flex items-center justify-between gap-4">
                 <div className="flex flex-wrap items-center gap-2">
                   <Pill tone={b.color === "gold" ? "gold" : b.color === "red" ? "red" : "neutral"}>
-                    {earned.has(b.id) ? "Unlocked" : "Locked"}
+                    Badge
                   </Pill>
                   <Pill>{b.id}</Pill>
                 </div>
-                {earned.has(b.id) ? <Pill tone="gold">★</Pill> : <Pill>☆</Pill>}
+                <Pill>★</Pill>
               </div>
               <div className="mt-3 text-lg font-semibold">{b.title.en}</div>
               <div className="mt-1 text-sm text-[color:var(--cq-muted)]">{b.desc.en}</div>

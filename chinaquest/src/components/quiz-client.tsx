@@ -1,7 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useMemo, useState } from "react";
 import { Button, Card, Pill } from "./ui";
 
 type QuizChoice = { key: string; zh: string; en: string };
@@ -9,57 +8,22 @@ type Quiz = {
   id: string;
   question: { zh: string; en: string };
   choices: QuizChoice[];
+  answerKey: string;
   hints: { level: 1 | 2; zh: string; en: string }[];
   explain: { zh: string; en: string };
 };
 
-type Attempt = { id: string; hintLevelUsed: 0 | 1 | 2; tries: number };
-
-export function QuizClient(props: { poiId: string; quizId: string }) {
-  const router = useRouter();
-  const search = useSearchParams();
-  const runId = search.get("runId") ?? undefined;
+export function QuizClient(props: { poiId: string; quiz: Quiz }) {
   const locale = "en" as const;
-
-  const [loading, setLoading] = useState(true);
-  const [quiz, setQuiz] = useState<Quiz | null>(null);
-  const [attempt, setAttempt] = useState<Attempt | null>(null);
+  const quiz = props.quiz;
   const [selected, setSelected] = useState<string | null>(null);
   const [result, setResult] = useState<null | { correct: boolean; explain: string }>(null);
   const [hintLevel, setHintLevel] = useState<0 | 1 | 2>(0);
+  const [tries, setTries] = useState(0);
 
   const questionText = useMemo(() => {
-    if (!quiz) return "";
     return locale === "en" ? quiz.question.en : quiz.question.zh;
   }, [quiz, locale]);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      const res = await fetch(`/api/quizzes/${encodeURIComponent(props.quizId)}/attempts`, {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({ poiId: props.poiId, runId, locale }),
-      });
-      const json = (await res.json()) as { quiz: Quiz; attempt: Attempt };
-      if (cancelled) return;
-      setQuiz(json.quiz);
-      setAttempt(json.attempt);
-      setHintLevel(json.attempt.hintLevelUsed);
-      setLoading(false);
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [props.poiId, props.quizId, runId, locale]);
-
-  if (loading || !quiz || !attempt) {
-    return (
-      <Card>
-        <div className="text-sm text-[color:var(--cq-muted)]">Loading puzzle…</div>
-      </Card>
-    );
-  }
 
   const hint1 = quiz.hints.find((h) => h.level === 1);
   const hint2 = quiz.hints.find((h) => h.level === 2);
@@ -79,8 +43,8 @@ export function QuizClient(props: { poiId: string; quizId: string }) {
       <Card>
         <div className="flex flex-wrap items-center gap-2">
           <Pill tone="gold">Puzzle</Pill>
-          <Pill>tries {attempt.tries}</Pill>
-          {runId ? <Pill tone="red">Run</Pill> : <Pill>Preview</Pill>}
+          <Pill>tries {tries}</Pill>
+          <Pill>Preview</Pill>
         </div>
         <div className="mt-4 text-lg font-semibold">{questionText}</div>
 
@@ -129,14 +93,9 @@ export function QuizClient(props: { poiId: string; quizId: string }) {
         <div className="mt-5 flex flex-wrap gap-3">
           <Button
             variant="ghost"
-            onClick={async () => {
+            onClick={() => {
               const next = hintLevel === 0 ? 1 : 2;
               if (next === hintLevel) return;
-              await fetch(`/api/quizzes/attempts/${encodeURIComponent(attempt.id)}/hint`, {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ level: next }),
-              });
               setHintLevel(next as 1 | 2);
             }}
           >
@@ -144,27 +103,11 @@ export function QuizClient(props: { poiId: string; quizId: string }) {
           </Button>
 
           <Button
-            onClick={async () => {
+            onClick={() => {
               if (!selected) return;
-              const res = await fetch(`/api/quizzes/attempts/${encodeURIComponent(attempt.id)}/submit`, {
-                method: "POST",
-                headers: { "content-type": "application/json" },
-                body: JSON.stringify({ answer: selected }),
-              });
-              const json = (await res.json()) as { correct: boolean; explain: { zh: string; en: string } };
-              setResult({ correct: json.correct, explain: json.explain.en });
-              if (!json.correct) return;
-
-              if (runId) {
-                await fetch(`/api/runs/${encodeURIComponent(runId)}/poi/${encodeURIComponent(props.poiId)}/complete`, {
-                  method: "POST",
-                  headers: { "content-type": "application/json" },
-                  body: JSON.stringify({ quizAttemptId: attempt.id }),
-                });
-                router.push(`/run/${runId}`);
-              } else {
-                router.push(`/routes`);
-              }
+              setTries((t) => t + 1);
+              const correct = selected === quiz.answerKey;
+              setResult({ correct, explain: quiz.explain.en });
             }}
             variant="secondary"
             className={!selected ? "pointer-events-none opacity-60" : undefined}
@@ -173,7 +116,7 @@ export function QuizClient(props: { poiId: string; quizId: string }) {
           </Button>
 
           <Button
-            href={runId ? `/poi/${props.poiId}?runId=${encodeURIComponent(runId)}` : `/poi/${props.poiId}`}
+            href={`/poi/${props.poiId}`}
             variant="ghost"
           >
             Back to stop

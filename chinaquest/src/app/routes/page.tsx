@@ -1,9 +1,9 @@
 import { SiteShell } from "@/components/shell";
 import { Button, Card, Pill } from "@/components/ui";
-import { getContent } from "@/lib/content";
+import { staticContent } from "@/lib/static-content";
 
 export default async function RoutesPage() {
-  const content = await getContent();
+  const content = staticContent;
 
   return (
     <SiteShell active="routes">

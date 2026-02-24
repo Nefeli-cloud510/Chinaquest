@@ -1,13 +1,16 @@
 import { SiteShell } from "@/components/shell";
-import { StartRunButton } from "@/components/start-run-button";
 import { Button, Card, Pill } from "@/components/ui";
-import { getContent, getRoute } from "@/lib/content";
+import { getStaticRoute, staticContent } from "@/lib/static-content";
+
+export function generateStaticParams() {
+  return staticContent.routes.map((r) => ({ routeId: r.id }));
+}
 
 export default async function RouteDetailPage(props: {
   params: Promise<{ routeId: string }>;
 }) {
   const { routeId } = await props.params;
-  const route = await getRoute(routeId);
+  const route = getStaticRoute(routeId);
   if (!route) {
     return (
       <SiteShell active="routes">
@@ -23,9 +26,8 @@ export default async function RouteDetailPage(props: {
     );
   }
 
-  const content = await getContent();
   const pois = route.poiIds
-    .map((id) => content.pois.find((p) => p.id === id))
+    .map((id) => staticContent.pois.find((p) => p.id === id))
     .filter(Boolean);
 
   return (
@@ -51,7 +53,9 @@ export default async function RouteDetailPage(props: {
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-              <StartRunButton routeId={route.id} />
+              <Button href="#stops" variant="secondary">
+                Explore stops
+              </Button>
               <Button
                 href="/routes"
                 variant="ghost"
@@ -66,7 +70,7 @@ export default async function RouteDetailPage(props: {
           </div>
         </Card>
 
-        <div className="grid gap-6 md:grid-cols-3">
+        <div id="stops" className="grid gap-6 md:grid-cols-3">
           {pois.map((p) => (
             <Card key={p!.id}>
               <div className="text-xs font-medium text-[color:var(--cq-muted)]">
