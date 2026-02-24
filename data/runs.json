@@ -1,0 +1,148 @@
+{
+  "runs": [
+    {
+      "id": "run_6c89de4de247e16634ae",
+      "userId": "anon_89902a1072aa96d430c6",
+      "routeId": "route_beijing_axis_3p_v1",
+      "createdAt": "2026-02-24T15:40:22.639Z",
+      "locale": "zh",
+      "poiProgress": [
+        {
+          "poiId": "poi_qianmen_arrow_tower",
+          "status": "completed",
+          "completedAt": "2026-02-24T15:40:51.579Z",
+          "lastQuizAttemptId": "qa_d287f7c28cd006d4ce2a"
+        },
+        {
+          "poiId": "poi_drum_tower",
+          "status": "available"
+        },
+        {
+          "poiId": "poi_birds_nest",
+          "status": "locked"
+        }
+      ],
+      "earnedBadgeIds": [
+        "badge_axis_gatekeeper"
+      ]
+    },
+    {
+      "id": "run_8c3508f293fa2adf809d",
+      "userId": "anon_595eb8ac8c5570cb00ee",
+      "routeId": "route_beijing_axis_3p_v1",
+      "createdAt": "2026-02-24T14:53:13.526Z",
+      "locale": "zh",
+      "poiProgress": [
+        {
+          "poiId": "poi_qianmen_arrow_tower",
+          "status": "completed",
+          "completedAt": "2026-02-24T14:53:14.074Z",
+          "lastQuizAttemptId": "qa_22694404fd1f9ab9589b"
+        },
+        {
+          "poiId": "poi_drum_tower",
+          "status": "available"
+        },
+        {
+          "poiId": "poi_birds_nest",
+          "status": "locked"
+        }
+      ],
+      "earnedBadgeIds": [
+        "badge_axis_gatekeeper"
+      ]
+    },
+    {
+      "id": "run_ec82bb8aab956dbc2b15",
+      "userId": "anon_af60426a97b47787f451",
+      "routeId": "route_beijing_axis_3p_v1",
+      "createdAt": "2026-02-24T14:51:47.819Z",
+      "locale": "zh",
+      "poiProgress": [
+        {
+          "poiId": "poi_qianmen_arrow_tower",
+          "status": "completed",
+          "completedAt": "2026-02-24T14:51:50.664Z",
+          "lastQuizAttemptId": "qa_635411d2c6ac697efcb4"
+        },
+        {
+          "poiId": "poi_drum_tower",
+          "status": "available"
+        },
+        {
+          "poiId": "poi_birds_nest",
+          "status": "locked"
+        }
+      ],
+      "earnedBadgeIds": [
+        "badge_axis_gatekeeper"
+      ]
+    },
+    {
+      "id": "run_597941d3f7108001a36a",
+      "userId": "anon_a945b01d01c1f475ad45",
+      "routeId": "route_beijing_axis_3p_v1",
+      "createdAt": "2026-02-24T14:29:45.517Z",
+      "locale": "zh",
+      "poiProgress": [
+        {
+          "poiId": "poi_qianmen_arrow_tower",
+          "status": "available"
+        },
+        {
+          "poiId": "poi_drum_tower",
+          "status": "locked"
+        },
+        {
+          "poiId": "poi_birds_nest",
+          "status": "locked"
+        }
+      ],
+      "earnedBadgeIds": []
+    },
+    {
+      "id": "run_820a0d2491b0e9f58117",
+      "userId": "anon_7c4023dfaa3eb75dfe9b",
+      "routeId": "route_beijing_axis_3p_v1",
+      "createdAt": "2026-02-24T14:29:25.415Z",
+      "locale": "zh",
+      "poiProgress": [
+        {
+          "poiId": "poi_qianmen_arrow_tower",
+          "status": "available"
+        },
+        {
+          "poiId": "poi_drum_tower",
+          "status": "locked"
+        },
+        {
+          "poiId": "poi_birds_nest",
+          "status": "locked"
+        }
+      ],
+      "earnedBadgeIds": []
+    },
+    {
+      "id": "run_55adfca0453300f35322",
+      "userId": "anon_abf5c34b8236da104c5f",
+      "routeId": "route_beijing_axis_3p_v1",
+      "createdAt": "2026-02-24T14:28:56.421Z",
+      "locale": "zh",
+      "poiProgress": [
+        {
+          "poiId": "poi_qianmen_arrow_tower",
+          "status": "available"
+        },
+        {
+          "poiId": "poi_drum_tower",
+          "status": "locked"
+        },
+        {
+          "poiId": "poi_birds_nest",
+          "status": "locked"
+        }
+      ],
+      "earnedBadgeIds": []
+    }
+  ]
+}
