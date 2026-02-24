@@ -1,0 +1,338 @@
+{
+  "version": 1,
+  "routes": [
+    {
+      "id": "route_beijing_axis_3p_v1",
+      "title": {
+        "zh": "Beijing Central Axis · 3-Stop Quest",
+        "en": "Beijing Central Axis · 3-Stop Quest"
+      },
+      "summary": {
+        "zh": "From gate to drumbeat to modern structure—unlock Beijing’s sense of order in three missions.",
+        "en": "From gate to drumbeat to modern structure—unlock Beijing’s sense of order in three missions."
+      },
+      "estimatedMinutes": 120,
+      "city": "Beijing",
+      "poiIds": [
+        "poi_qianmen_arrow_tower",
+        "poi_drum_tower",
+        "poi_birds_nest"
+      ],
+      "rules": {
+        "zh": [
+          "Complete one puzzle per stop to earn a badge",
+          "Offline reading supported; AR will be added next"
+        ],
+        "en": [
+          "Complete one puzzle per stop to earn a badge",
+          "Offline reading supported; AR will be added next"
+        ]
+      },
+      "cover": {
+        "gradient": "linear-gradient(135deg, rgba(180,0,34,0.95) 0%, rgba(242,194,0,0.85) 55%, rgba(17,19,24,0.55) 100%)",
+        "accent": "gold"
+      }
+    }
+  ],
+  "badges": [
+    {
+      "id": "badge_axis_gatekeeper",
+      "title": {
+        "zh": "Gatekeeper of the Axis",
+        "en": "Gatekeeper of the Axis"
+      },
+      "desc": {
+        "zh": "You decoded the first signal of the gate.",
+        "en": "You decoded the first signal of the gate."
+      },
+      "color": "red",
+      "icon": "gate"
+    },
+    {
+      "id": "badge_axis_timekeeper",
+      "title": {
+        "zh": "Timekeeper",
+        "en": "Timekeeper"
+      },
+      "desc": {
+        "zh": "You heard the rhythm of the old capital.",
+        "en": "You heard the rhythm of the old capital."
+      },
+      "color": "gold",
+      "icon": "drum"
+    },
+    {
+      "id": "badge_axis_modern_weaver",
+      "title": {
+        "zh": "Modern Weaver",
+        "en": "Modern Weaver"
+      },
+      "desc": {
+        "zh": "You found modern order inside woven steel.",
+        "en": "You found modern order inside woven steel."
+      },
+      "color": "ink",
+      "icon": "nest"
+    },
+    {
+      "id": "badge_axis_complete",
+      "title": {
+        "zh": "Axis Explorer",
+        "en": "Axis Explorer"
+      },
+      "desc": {
+        "zh": "You completed the 3-stop Central Axis quest.",
+        "en": "You completed the 3-stop Central Axis quest."
+      },
+      "color": "gold",
+      "icon": "axis"
+    }
+  ],
+  "pois": [
+    {
+      "id": "poi_qianmen_arrow_tower",
+      "routeId": "route_beijing_axis_3p_v1",
+      "order": 1,
+      "geo": {
+        "lat": 39.8993,
+        "lng": 116.3975
+      },
+      "title": {
+        "zh": "Qianmen Arrow Tower",
+        "en": "Qianmen Arrow Tower"
+      },
+      "short": {
+        "zh": "Order begins at the threshold.",
+        "en": "Order begins at the threshold."
+      },
+      "arriveHint": {
+        "zh": "Stand in an open spot and avoid strong glare or backlight.",
+        "en": "Stand in an open spot and avoid strong glare or backlight."
+      },
+      "scanHint": {
+        "zh": "For the MVP, tap “Start puzzle” to continue; AR will be added next.",
+        "en": "For the MVP, tap “Start puzzle” to continue; AR will be added next."
+      },
+      "story": {
+        "intro": {
+          "zh": "Welcome to Qianmen Arrow Tower. Mission one: read order through the gate’s structure and position.",
+          "en": "Welcome to Qianmen Arrow Tower. Mission one: read order through the gate’s structure and position."
+        },
+        "arBeat": {
+          "zh": "Imagine a defense line expanding from the gate. Find why it exists.",
+          "en": "Imagine a defense line expanding from the gate. Find why it exists."
+        }
+      },
+      "quizId": "quiz_qianmen_001",
+      "rewards": {
+        "badgeId": "badge_axis_gatekeeper"
+      }
+    },
+    {
+      "id": "poi_drum_tower",
+      "routeId": "route_beijing_axis_3p_v1",
+      "order": 2,
+      "geo": {
+        "lat": 39.941,
+        "lng": 116.3893
+      },
+      "title": {
+        "zh": "Drum Tower",
+        "en": "Drum Tower"
+      },
+      "short": {
+        "zh": "The Drum Tower is an important cultural symbol on the central axis.",
+        "en": "The Drum Tower is an important cultural symbol on the central axis."
+      },
+      "arriveHint": {
+        "zh": "Stay near the plaza or entrance for an easier read and puzzle solving.",
+        "en": "Stay near the plaza or entrance for an easier read and puzzle solving."
+      },
+      "scanHint": {
+        "zh": "For the MVP, tap “Start puzzle” to continue; AR will be added next.",
+        "en": "For the MVP, tap “Start puzzle” to continue; AR will be added next."
+      },
+      "story": {
+        "intro": {
+          "zh": "The Drum Tower is an important cultural symbol on the central axis. Decode how time organized city life.",
+          "en": "The Drum Tower is an important cultural symbol on the central axis. Decode how time organized city life."
+        },
+        "arBeat": {
+          "zh": "Imagine beats as a rhythm ring—linking everyone’s daily life.",
+          "en": "Imagine beats as a rhythm ring—linking everyone’s daily life."
+        }
+      },
+      "quizId": "quiz_drum_001",
+      "rewards": {
+        "badgeId": "badge_axis_timekeeper"
+      }
+    },
+    {
+      "id": "poi_birds_nest",
+      "routeId": "route_beijing_axis_3p_v1",
+      "order": 3,
+      "geo": {
+        "lat": 39.9917,
+        "lng": 116.3906
+      },
+      "title": {
+        "zh": "National Stadium (Bird’s Nest)",
+        "en": "National Stadium (Bird’s Nest)"
+      },
+      "short": {
+        "zh": "Structure as aesthetics: a symbol of modern public space.",
+        "en": "Structure as aesthetics: a symbol of modern public space."
+      },
+      "arriveHint": {
+        "zh": "Stand where the woven steel façade is clearly visible.",
+        "en": "Stand where the woven steel façade is clearly visible."
+      },
+      "scanHint": {
+        "zh": "For the MVP, tap “Start puzzle” to continue; AR will be added next.",
+        "en": "For the MVP, tap “Start puzzle” to continue; AR will be added next."
+      },
+      "story": {
+        "intro": {
+          "zh": "You’ve passed the gate and the drumbeat. Final chapter: find modern order in woven steel.",
+          "en": "You’ve passed the gate and the drumbeat. Final chapter: find modern order in woven steel."
+        },
+        "arBeat": {
+          "zh": "See the steel as breathing fabric—structure becomes the surface.",
+          "en": "See the steel as breathing fabric—structure becomes the surface."
+        }
+      },
+      "quizId": "quiz_nest_001",
+      "rewards": {
+        "badgeId": "badge_axis_modern_weaver"
+      }
+    }
+  ],
+  "quizzes": [
+    {
+      "id": "quiz_qianmen_001",
+      "type": "single_choice",
+      "question": {
+        "zh": "In a city defense system, what is the Arrow Tower primarily used for?",
+        "en": "In a city defense system, what is the Arrow Tower primarily used for?"
+      },
+      "choices": [
+        {
+          "key": "A",
+          "zh": "A ceremonial viewing platform",
+          "en": "A ceremonial viewing platform"
+        },
+        {
+          "key": "B",
+          "zh": "A defensive and lookout strongpoint",
+          "en": "A defensive and lookout strongpoint"
+        },
+        {
+          "key": "C",
+          "zh": "A market administration office",
+          "en": "A market administration office"
+        }
+      ],
+      "answerKey": "B",
+      "hints": [
+        {
+          "level": 1,
+          "zh": "Look at the key words: “arrow” and “tower.”",
+          "en": "Look at the key words: “arrow” and “tower.”"
+        },
+        {
+          "level": 2,
+          "zh": "It relates to firing positions, lookout, and defense—not ceremonies or commerce.",
+          "en": "It relates to firing positions, lookout, and defense—not ceremonies or commerce."
+        }
+      ],
+      "explain": {
+        "zh": "The Arrow Tower is a key defensive node of the city gate system, combining lookout and protection.",
+        "en": "The Arrow Tower is a key defensive node of the city gate system, combining lookout and protection."
+      }
+    },
+    {
+      "id": "quiz_drum_001",
+      "type": "single_choice",
+      "question": {
+        "zh": "Before phones and personal clocks, how did a city broadcast time to everyone?",
+        "en": "Before phones and personal clocks, how did a city broadcast time to everyone?"
+      },
+      "choices": [
+        {
+          "key": "A",
+          "zh": "Market announcements",
+          "en": "Market announcements"
+        },
+        {
+          "key": "B",
+          "zh": "Public signals like drums and bells",
+          "en": "Public signals like drums and bells"
+        },
+        {
+          "key": "C",
+          "zh": "Messengers door-to-door",
+          "en": "Messengers door-to-door"
+        }
+      ],
+      "answerKey": "B",
+      "hints": [
+        {
+          "level": 1,
+          "zh": "Think about what “drum tower / bell tower” means as a pair.",
+          "en": "Think about what “drum tower / bell tower” means as a pair."
+        },
+        {
+          "level": 2,
+          "zh": "Public sounds had the widest reach—an ancient notification system.",
+          "en": "Public sounds had the widest reach—an ancient notification system."
+        }
+      ],
+      "explain": {
+        "zh": "Drums and bells broadcast time and civic order through public signals.",
+        "en": "Drums and bells broadcast time and civic order through public signals."
+      }
+    },
+    {
+      "id": "quiz_nest_001",
+      "type": "single_choice",
+      "question": {
+        "zh": "The Bird’s Nest’s signature structural aesthetics come from what?",
+        "en": "The Bird’s Nest’s signature structural aesthetics come from what?"
+      },
+      "choices": [
+        {
+          "key": "A",
+          "zh": "Masonry",
+          "en": "Masonry"
+        },
+        {
+          "key": "B",
+          "zh": "Timber joinery",
+          "en": "Timber joinery"
+        },
+        {
+          "key": "C",
+          "zh": "Woven steel structure",
+          "en": "Woven steel structure"
+        }
+      ],
+      "answerKey": "C",
+      "hints": [
+        {
+          "level": 1,
+          "zh": "Does the façade look woven like a nest, or stacked like masonry?",
+          "en": "Does the façade look woven like a nest, or stacked like masonry?"
+        },
+        {
+          "level": 2,
+          "zh": "Material and structure directly become the visual expression.",
+          "en": "Material and structure directly become the visual expression."
+        }
+      ],
+      "explain": {
+        "zh": "Its iconic look comes from interwoven steel—structure as aesthetics.",
+        "en": "Its iconic look comes from interwoven steel—structure as aesthetics."
+      }
+    }
+  ]
+}
