@@ -1,10 +1,9 @@
 import { SiteShell } from "@/components/shell";
 import { Button, Card, Pill } from "@/components/ui";
-import { getContent } from "@/lib/content";
+import { staticContent } from "@/lib/static-content";
 
 export default async function HomePage() {
-  const content = await getContent();
-  const route = content.routes[0];
+  const route = staticContent.routes[0];
 
   return (
     <SiteShell active="home">

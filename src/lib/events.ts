@@ -1,5 +1,5 @@
 import { headers } from "next/headers";
-import { appendNdjson } from "./store";
+import { appendNdjson, JsonValue } from "./store";
 
 export type AnalyticsEvent = {
   name: string;
@@ -11,7 +11,7 @@ export type AnalyticsEvent = {
   poiId?: string;
   page?: string;
   locale?: "zh" | "en";
-  props?: Record<string, unknown>;
+  props?: Record<string, JsonValue>;
 };
 
 export async function logEvent(event: AnalyticsEvent) {
@@ -23,4 +23,3 @@ export async function logEvent(event: AnalyticsEvent) {
   };
   await appendNdjson("events.ndjson", payload);
 }
-

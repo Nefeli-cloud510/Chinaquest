@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { ReactNode } from "react";
-import { getSessionFromCookie, getUserById } from "@/lib/auth";
 import { cx } from "./ui";
 
 function NavItem(props: {
@@ -28,9 +27,8 @@ export async function SiteShell(props: {
   active: "home" | "about" | "routes" | "badges" | "admin";
   children: ReactNode;
 }) {
-  const session = await getSessionFromCookie();
-  const user = session ? await getUserById(session.userId) : null;
-  const isAdmin = user?.role === "admin";
+  const userEmail: string | null = null;
+  const isAdmin = false;
 
   return (
     <div className="min-h-dvh bg-[color:var(--cq-bg)]">
@@ -63,24 +61,15 @@ export async function SiteShell(props: {
           <div className="mt-6 rounded-3xl bg-[color:var(--cq-ink)] p-4 text-white">
             <div className="text-sm font-semibold">Account</div>
             <div className="mt-1 text-xs text-white/70">
-              {user ? user.email : "Guest mode (admin login available)"}
+              {userEmail ?? "Guest mode (admin login available)"}
             </div>
             <div className="mt-4 flex gap-2">
-              {user ? (
-                <Link
-                  href="/api/auth/logout"
-                  className="inline-flex h-9 items-center justify-center rounded-full bg-white/10 px-4 text-xs font-medium hover:bg-white/15"
-                >
-                  Sign out
-                </Link>
-              ) : (
-                <Link
-                  href="/login"
-                  className="inline-flex h-9 items-center justify-center rounded-full bg-[color:var(--cq-gold)] px-4 text-xs font-semibold text-[color:var(--cq-ink)] hover:bg-[color:var(--cq-gold-2)]"
-                >
-                  Sign in
-                </Link>
-              )}
+              <Link
+                href="/login"
+                className="inline-flex h-9 items-center justify-center rounded-full bg-[color:var(--cq-gold)] px-4 text-xs font-semibold text-[color:var(--cq-ink)] hover:bg-[color:var(--cq-gold-2)]"
+              >
+                Sign in
+              </Link>
               <Link
                 href="/routes"
                 className="inline-flex h-9 flex-1 items-center justify-center rounded-full bg-white/10 px-4 text-xs font-medium hover:bg-white/15"

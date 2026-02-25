@@ -1,13 +1,17 @@
 import { SiteShell } from "@/components/shell";
 import { QuizClient } from "@/components/quiz-client";
 import { Button, Card, Pill } from "@/components/ui";
-import { getPoi, getQuiz } from "@/lib/content";
+import { getStaticPoi, getStaticQuiz, staticContent } from "@/lib/static-content";
+
+export function generateStaticParams() {
+  return staticContent.pois.map((p) => ({ poiId: p.id }));
+}
 
 export default async function PoiQuizPage(props: {
   params: Promise<{ poiId: string }>;
 }) {
   const { poiId } = await props.params;
-  const poi = await getPoi(poiId);
+  const poi = getStaticPoi(poiId);
   if (!poi) {
     return (
       <SiteShell active="routes">
@@ -22,7 +26,7 @@ export default async function PoiQuizPage(props: {
       </SiteShell>
     );
   }
-  const quiz = await getQuiz(poi.quizId);
+  const quiz = getStaticQuiz(poi.quizId);
   if (!quiz) {
     return (
       <SiteShell active="routes">
@@ -52,7 +56,7 @@ export default async function PoiQuizPage(props: {
           </Button>
         </Card>
 
-        <QuizClient poiId={poiId} quizId={quiz.id} />
+        <QuizClient poiId={poiId} quiz={quiz} />
       </div>
     </SiteShell>
   );

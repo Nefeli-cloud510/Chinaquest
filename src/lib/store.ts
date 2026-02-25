@@ -2,7 +2,7 @@ import { randomBytes } from "crypto";
 import { promises as fs } from "fs";
 import path from "path";
 
-type JsonValue =
+export type JsonValue =
   | null
   | boolean
   | number
@@ -89,4 +89,3 @@ export async function appendNdjson(fileName: string, line: JsonValue) {
   const payload = `${JSON.stringify(line)}\n`;
   await fs.appendFile(filePath, payload, "utf-8");
 }
-

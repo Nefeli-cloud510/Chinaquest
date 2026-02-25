@@ -79,7 +79,7 @@ export async function startPoi(runId: string, poiId: string) {
       if (p.poiId !== poiId) return p;
       if (p.status === "locked") return p;
       if (p.status === "completed") return p;
-      return { ...p, status: "in_progress", startedAt: p.startedAt ?? new Date().toISOString() };
+      return { ...p, status: "in_progress" as const, startedAt: p.startedAt ?? new Date().toISOString() };
     });
     const next: Run = { ...run, poiProgress: progress };
     const runs = [...current.runs];
@@ -168,4 +168,3 @@ export async function buildReport(runId: string) {
 
   return { run, route, poiCards, badgeCards };
 }
-
