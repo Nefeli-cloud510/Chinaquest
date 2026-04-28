@@ -4,14 +4,26 @@
     {
       "id": "route_beijing_axis_3p_v1",
       "title": {
-        "zh": "Beijing Central Axis · 3-Stop Quest",
+        "zh": "北京中轴线 · 3站任务",
         "en": "Beijing Central Axis · 3-Stop Quest"
       },
+      "headline": {
+        "zh": "北京中轴线：帝国落笔之处，未来起形之时",
+        "en": "Beijing’s Central Axis: Where the Empire Found Its Line, and the Future Finds Its Shape"
+      },
+      "tagline": {
+        "zh": "行走于这条曾为都城定格的线路，看它如何继续勾勒一座流动之城的轮廓。",
+        "en": "Walk the invisible line that once held a capital in place—and see how it still draws the silhouette of a city in motion."
+      },
       "summary": {
-        "zh": "From gate to drumbeat to modern structure—unlock Beijing’s sense of order in three missions.",
+        "zh": "从前门到鼓楼再到鸟巢：用三次任务读懂北京的秩序、时间与结构之美。",
         "en": "From gate to drumbeat to modern structure—unlock Beijing’s sense of order in three missions."
       },
-      "estimatedMinutes": 120,
+      "intro": {
+        "zh": "这条线路邀请你把北京当作一本“可阅读的城市”。你不只是打卡地标，而是在每一站解码它们的含义：从前门出发，理解古代城市规划如何把权力与秩序写进空间；再登上鼓楼，在北京的“心脏”读懂时间如何曾是一场公共仪式；最后抵达鸟巢，看一座现代地标如何把钢结构大胆外露，让“结构本身”成为建筑身份。\n适合想要比照片更深体验的旅行者。全程约4–5小时（含交通与拍照停留）。建议14:00左右出发，白天看清细节，傍晚在鸟巢收尾，赶上迷人的夜景灯光。",
+        "en": "This route is an invitation to read Beijing like a story. You won't just see landmarks—you'll decode them. Begin at Qianmen, the symbolic gate where imperial authority met the everyday world, and learn how city planning once enforced power. Next, climb the Drum Tower, the city’s ancient heartbeat, to understand how time was once a public spectacle. Finally, arrive at the Bird’s Nest, a modern icon that breaks old rules by wearing its steel skeleton on the outside.\nPerfect for curious travelers who want more than photos, this 4–5 hour journey (including travel and photo stops) connects Beijing’s past and present. Start around 2:00 PM to enjoy daylight details and finish at the Bird’s Nest in time for its stunning evening lights."
+      },
+      "estimatedMinutes": 270,
       "city": "Beijing",
       "poiIds": [
         "poi_qianmen_arrow_tower",
@@ -20,12 +32,50 @@
       ],
       "rules": {
         "zh": [
-          "Complete one puzzle per stop to earn a badge",
-          "Offline reading supported; AR will be added next"
+          "按顺序探索：前门 → 鼓楼 → 鸟巢，沿时间轴读懂城市演变",
+          "每站完成一道题，解锁一枚徽章，记录你的“读城”进度",
+          "在 Badges 页面查看收藏，集齐三枚成为“Axis Explorer”",
+          "完成上一站挑战后再开启下一章，最终徽章为全程收尾",
+          "离线阅读可用；AR 互动将在下一阶段上线"
         ],
         "en": [
-          "Complete one puzzle per stop to earn a badge",
-          "Offline reading supported; AR will be added next"
+          "Follow the path in order: Qianmen → Drum Tower → Bird’s Nest",
+          "Earn one badge per stop by completing the puzzle challenge",
+          "Track your collection on the Badges page—collect all three to become an “Axis Explorer”",
+          "Unlock the next chapter by finishing the current stop’s challenge",
+          "Offline reading is supported; AR interactions will be added next"
+        ]
+      },
+      "pacing": {
+        "zh": [
+          "前门（Stop 1）：45–60分钟（广场漫步 + 机位拍照 + 完成任务）",
+          "前门 → 鼓楼：20–30分钟（地铁换乘 + 步行）",
+          "鼓楼（Stop 2）：60–75分钟（登楼观景 + 看演出时刻 + 完成任务）",
+          "鼓楼 → 鸟巢：30–40分钟（地铁换乘 + 步行）",
+          "鸟巢（Stop 3）：60–90分钟（外立面观赏 + 等日落与夜景 + 完成终章）"
+        ],
+        "en": [
+          "Qianmen (Stop 1): 45–60 mins (explore the gate, find your photo spot, complete the challenge)",
+          "Travel to Drum Tower: 20–30 mins (subway + short walk)",
+          "Drum Tower (Stop 2): 60–75 mins (climb, enjoy the view, time it with a drumming performance)",
+          "Travel to Bird’s Nest: 30–40 mins (subway + walk)",
+          "Bird’s Nest (Stop 3): 60–90 mins (walk the exterior, wait for dusk lights, finish the final challenge)"
+        ]
+      },
+      "prep": {
+        "zh": [
+          "舒适鞋：鼓楼楼梯陡（约69级），步行时间也较长",
+          "交通：地铁是最省心的方式，建议备好乘车码/一卡通",
+          "门票：鼓楼旺季建议提前确认开放时间与购票方式",
+          "充电宝：导航、拍照与互动都会耗电",
+          "证件：部分场馆购票或入内可能需要身份证件/护照"
+        ],
+        "en": [
+          "Comfortable shoes: you’ll walk a lot, and the Drum Tower stairs are steep",
+          "Subway pass: the Beijing Subway is the easiest way between stops",
+          "Tickets: check opening times and consider booking Drum Tower tickets in peak season",
+          "Power bank: you’ll use your phone for navigation, photos, and the experience",
+          "ID / passport: may be required for some ticket purchases or entry"
         ]
       },
       "cover": {
@@ -38,41 +88,44 @@
     {
       "id": "badge_axis_gatekeeper",
       "title": {
-        "zh": "Gatekeeper of the Axis",
-        "en": "Gatekeeper of the Axis"
+        "zh": "秩序守门人",
+        "en": "Gatekeeper of Order"
       },
       "desc": {
-        "zh": "You decoded the first signal of the gate.",
-        "en": "You decoded the first signal of the gate."
+        "zh": "你洞察了前门如何把守出入，并象征帝都秩序。",
+        "en": "You have uncovered how Qianmen regulated entry and symbolized the structured design of imperial Beijing."
       },
       "color": "red",
-      "icon": "gate"
+      "icon": "gate",
+      "image": "qianmen_gate.png"
     },
     {
       "id": "badge_axis_timekeeper",
       "title": {
-        "zh": "Timekeeper",
-        "en": "Timekeeper"
+        "zh": "时间守望者",
+        "en": "Keeper of Time"
       },
       "desc": {
-        "zh": "You heard the rhythm of the old capital.",
-        "en": "You heard the rhythm of the old capital."
+        "zh": "你读懂了鼓与钟如何在黄昏报时，编排古都的夜晚节奏。",
+        "en": "You traced how drums and bells marked dusk and organized the city’s nightly rhythm."
       },
       "color": "gold",
-      "icon": "drum"
+      "icon": "drum",
+      "image": "gulou.png"
     },
     {
       "id": "badge_axis_modern_weaver",
       "title": {
-        "zh": "Modern Weaver",
-        "en": "Modern Weaver"
+        "zh": "奥运推广者",
+        "en": "Promoter of the Olympics"
       },
       "desc": {
-        "zh": "You found modern order inside woven steel.",
-        "en": "You found modern order inside woven steel."
+        "zh": "你抵达“双奥之城”的地标场馆，并读懂它的设计理念。",
+        "en": "You have arrived at the world’s first dual-Olympic city and understood its design concept."
       },
       "color": "ink",
-      "icon": "nest"
+      "icon": "nest",
+      "image": "niaochao_budget.png"
     },
     {
       "id": "badge_axis_complete",
@@ -85,7 +138,8 @@
         "en": "You completed the 3-stop Central Axis quest."
       },
       "color": "gold",
-      "icon": "axis"
+      "icon": "axis",
+      "image": "final.png"
     }
   ],
   "pois": [
@@ -98,29 +152,34 @@
         "lng": 116.3975
       },
       "title": {
-        "zh": "Qianmen Arrow Tower",
-        "en": "Qianmen Arrow Tower"
+        "zh": "前门",
+        "en": "Qianmen (Front Gate)"
       },
       "short": {
-        "zh": "Order begins at the threshold.",
-        "en": "Order begins at the threshold."
+        "zh": "皇家秩序与城市日常生活交汇的礼仪门户。",
+        "en": "The ceremonial gateway where imperial order met the everyday life of the city."
+      },
+      "image": "qianmen_photo.png",
+      "overview": {
+        "zh": "如果你想理解北京为何被这样设计，就从前门开始。它始建于明代，是帝都南端最重要的礼仪入口，标记着从市井生活通往政治中心的分界线。站在这里，你能同时感受到古都的秩序感——笔直的中轴线如何组织城市，以及现代北京的烟火气如何在城门外延续。",
+        "en": "If you want to understand how Beijing was designed, start at Qianmen. Built in 1419 during the Ming Dynasty, this imposing gate served as the formal southern entrance to the imperial capital. It marked the line between ordinary life and the political heart of the empire. Qianmen anchors the southern end of Beijing’s historic Central Axis—a straight north–south spine that once organized the city as an expression of order and stability. Today, the grey brick base, red columns, and layered tiled roofs remain striking and photogenic, while lively streets nearby bring modern energy into the scene. Standing here, you can feel the structure of the old capital and the rhythm of present-day Beijing in one place."
       },
       "arriveHint": {
-        "zh": "Stand in an open spot and avoid strong glare or backlight.",
-        "en": "Stand in an open spot and avoid strong glare or backlight."
+        "zh": "交通：地铁2号线/8号线到前门站，C口出站步行可达。\n拍照机位：城楼前广场更容易把城门完整框进画面。\n建议时间：清晨/傍晚光线更柔和，人流也更少。\n避坑：周末与节假日拥挤；正午强光阴影较硬。",
+        "en": "How to get there: Take Beijing Subway Line 2 or Line 8 to Qianmen Station, Exit C.\nBest time: Early morning or late afternoon for softer light and fewer crowds (evening lights are also beautiful).\nWhere to stand: The open square in front of the gate helps you frame it cleanly against the sky.\nAvoid: Weekends and public holidays; midday sun creates harsh shadows on the façade."
       },
       "scanHint": {
-        "zh": "For the MVP, tap “Start puzzle” to continue; AR will be added next.",
-        "en": "For the MVP, tap “Start puzzle” to continue; AR will be added next."
+        "zh": "回答下面的问题即可解锁你的第一枚徽章，并开启中轴线之旅。（AR 互动将在下一阶段上线）",
+        "en": "Answer the question below to unlock your first badge and begin your journey along Beijing’s Central Axis. (AR interactions will be added in the next phase.)"
       },
       "story": {
         "intro": {
-          "zh": "Welcome to Qianmen Arrow Tower. Mission one: read order through the gate’s structure and position.",
-          "en": "Welcome to Qianmen Arrow Tower. Mission one: read order through the gate’s structure and position."
+          "zh": "你刚刚获得“文化探险家”的身份。你的任务从一座曾经把守帝都入口的城门开始。想象四百年前你站在这里：你是入城报到的官员、送货进城的商人，还是远道而来的旅人？在沿着中轴线继续向北之前，请停下片刻：前门从来不只是城墙，它是一道“筛选器”，也是秩序的象征。你的第一个挑战：你能看懂这座城市建立在怎样的秩序之上吗？",
+          "en": "You have just received your identity as a “Cultural Explorer.” Your mission begins at a gate that once controlled who could enter the heart of the empire. Imagine arriving here 400 years ago—would you be an official reporting to court, a merchant bringing goods, or a traveler curious about the capital? Before you move north along the Central Axis, pause for a moment. This gate was never just a wall. It was a filter, a symbol of order. Your first challenge: can you read what kind of order this city was built upon?"
         },
         "arBeat": {
-          "zh": "Imagine a defense line expanding from the gate. Find why it exists.",
-          "en": "Imagine a defense line expanding from the gate. Find why it exists."
+          "zh": "想象一条线从前门向北延伸，把城市的礼制与日常串起来：从入口开始，秩序被一步步铺陈。",
+          "en": "Imagine a line extending north from Qianmen—linking ceremony and daily life. From the entrance onward, order unfolds step by step."
         }
       },
       "quizId": "quiz_qianmen_001",
@@ -137,29 +196,34 @@
         "lng": 116.3893
       },
       "title": {
-        "zh": "Drum Tower",
-        "en": "Drum Tower"
+        "zh": "鼓楼",
+        "en": "The Drum Tower"
       },
       "short": {
-        "zh": "The Drum Tower is an important cultural symbol on the central axis.",
-        "en": "The Drum Tower is an important cultural symbol on the central axis."
+        "zh": "聆听回荡数百年的“暮鼓”，在北京的“心脏”感受古老城市的都市节奏。",
+        "en": "Listen for the echo of ancient timekeeping drums and feel the urban rhythm of Beijing at its historic “heartbeat.”"
+      },
+      "image": "gulou.jpg",
+      "overview": {
+        "zh": "欢迎来到鼓楼——中轴线向北的高潮，也是北京最重要的“报时器”。鼓楼始建于1272年，明代重建，楼高约47米。过去每天傍晚，鼓声会宣告城门将闭，夜晚正式开始。\n登上陡峭的69级石阶，你走的是古代击鼓人的路线。顶层陈列着壮观的鼓阵：24面小鼓象征二十四节气，1面大鼓象征一年。别错过展出的旧鼓，它的裂痕像年轮一样记录着城市的动荡。\n为什么值得停留？鼓楼把“皇城秩序”与“胡同生活”连接在一起。站在露台上，向南能看到中轴线延伸至故宫，向北则是钟楼相对而立，脚下铺开的是灰瓦老屋的街区纹理——这里最适合感受北京的历史呼吸与日常节拍。",
+        "en": "Welcome to the Drum Tower, the northern climax of the Central Axis and the ancient timekeeper of Beijing. Built in 1272 and rebuilt in the Ming Dynasty, this majestic 47‑meter‑tall structure once set the rhythm of the capital. At dusk, the deep beat of its drums signaled that the city gates were about to close and night was beginning.\nClimb the steep 69 stone steps and you’ll follow the path of the drummers themselves. At the top, you’ll see an impressive drum set: twenty‑four smaller drums for the 24 solar terms and one large drum for the year. Look closely at the damaged original drum on display—its scars quietly hold the city’s past.\nWhy stop here? The Drum Tower is where imperial order meets the everyday life of Beijing’s hutongs. From the terrace, you can trace the Central Axis stretching south toward the Forbidden City, spot the Bell Tower to the north, and take in the grey‑tiled rooftops all around. It’s one of the best places to feel Beijing’s history as a living rhythm."
       },
       "arriveHint": {
-        "zh": "Stay near the plaza or entrance for an easier read and puzzle solving.",
-        "en": "Stay near the plaza or entrance for an easier read and puzzle solving."
+        "zh": "到达：地铁8号线到什刹海站A2口，向北步行约10分钟。\n建议时间：9:30开门时或15:00–16:00光线更柔、人流更少。\n拍照机位：二层露台视野开阔，适合拍屋顶与轴线方向。\n避坑：楼梯陡且狭窄，周末/节假日需排队；注意现场演出时刻表。",
+        "en": "Finding the stop: Take Subway Line 8 to Shichahai Station, Exit A2. Walk north for about 10 minutes.\nBest time: Visit right at opening (9:30 AM) or around 3:00–4:00 PM for softer light and fewer crowds.\nBest spot: Go up to the second‑floor terrace for the most open views and photos.\nMind the crowds: The stairway is steep and narrow—expect waiting on weekends and holidays. Check the performance schedule at the entrance."
       },
       "scanHint": {
-        "zh": "For the MVP, tap “Start puzzle” to continue; AR will be added next.",
-        "en": "For the MVP, tap “Start puzzle” to continue; AR will be added next."
+        "zh": "MVP：仔细观察主鼓与旧鼓的痕迹，然后点击“Start puzzle”完成答题，证明你找到了“时间守望者”。\nAR：下一阶段将通过识别鼓面，让历史的“伤痕”开口说话。",
+        "en": "MVP: Look closely at the main drum—can you spot the marks left by history? Tap “Start puzzle” and prove you’ve found the “Keeper of Time.”\nAR (next phase): When your device recognizes the drum’s surface, the scars of history will speak—revealing whispers of the past."
       },
       "story": {
         "intro": {
-          "zh": "The Drum Tower is an important cultural symbol on the central axis. Decode how time organized city life.",
-          "en": "The Drum Tower is an important cultural symbol on the central axis. Decode how time organized city life."
+          "zh": "传说这里曾住着一只狐仙。夜巡更夫敲完最后一通暮鼓，把鼓槌随手一丢；可到了清晨，鼓槌总会被整齐地放回原位——仿佛有人替“另一个世界”继续报时。你的任务简单得多，但同样需要眼力：你能找到这座城市沉默的报时者吗？",
+          "en": "Legend has it that a fox spirit lived here. After the night watchman finished the final drumming, he would toss his drumsticks aside. But by morning, the fox spirit had neatly placed them back on the stand, quietly keeping time for the spirit world. Your task is much simpler—but just as observant: can you find the silent keeper of time?"
         },
         "arBeat": {
-          "zh": "Imagine beats as a rhythm ring—linking everyone’s daily life.",
-          "en": "Imagine beats as a rhythm ring—linking everyone’s daily life."
+          "zh": "想象鼓声像涟漪一样扩散：一座城市被同一段节拍同时唤醒与安静。",
+          "en": "Imagine the drumbeat spreading like ripples—one rhythm reaching an entire city at once."
         }
       },
       "quizId": "quiz_drum_001",
@@ -176,25 +240,30 @@
         "lng": 116.3906
       },
       "title": {
-        "zh": "National Stadium (Bird’s Nest)",
+        "zh": "国家体育场（鸟巢）",
         "en": "National Stadium (Bird’s Nest)"
       },
       "short": {
-        "zh": "Structure as aesthetics: a symbol of modern public space.",
-        "en": "Structure as aesthetics: a symbol of modern public space."
+        "zh": "2008年北京奥运会和2022年北京冬奥会的主体育场。",
+        "en": "The main stadium for both the 2008 Beijing Olympics and the 2022 Beijing Winter Olympics."
+      },
+      "image": "niaochaio.png",
+      "overview": {
+        "zh": "鸟巢在2002年中标成为北京奥运会主体育场方案，由赫尔佐格与德梅隆及李兴钢团队共同打造。它以“孕育生命的巢”为概念，把传统审美中“天人合一”的整体观与现代结构工程结合起来。作为世界首个“双奥场馆”，它见证了2008与2022两次开幕式的高光时刻。\n在这里你可以：登上高处走廊，从钢网中俯瞰场馆的几何秩序；傍晚欣赏灯光透过钢结构的脉动，与旁边“冰立方”形成“火与冰”的对比；近距离观察42,000吨钢材织就的外壳——结构本身就是建筑的身份。来这里，不只是看一座体育场，而是读懂现代北京如何把记忆、技术与象征写进城市天际线。",
+        "en": "Selected in 2002 as the winning design for Beijing’s main Olympic stadium, the Bird’s Nest was shaped by Herzog & de Meuron together with Chinese architect Li Xinggang. Inspired by the idea of “a nest that breeds life,” it fuses a sense of wholeness in Chinese aesthetics with a bold modern structure. As one of the world’s first dual-Olympic venues, it hosted unforgettable opening ceremonies in both 2008 and 2022.\nHere you can trace Olympic legacy, climb to a sky-corridor viewpoint to look through the steel mesh, and stay for dusk when red light pulses through the lattice—creating a striking “fire and ice” contrast with the nearby Water Cube. Most of all, don’t miss the architecture itself: a 42,000‑ton woven steel shell where the structure becomes the identity. It’s a walk through light, steel, and memory—and a perfect final chapter for modern Beijing on this route."
       },
       "arriveHint": {
-        "zh": "Stand where the woven steel façade is clearly visible.",
-        "en": "Stand where the woven steel façade is clearly visible."
+        "zh": "交通：地铁8号线到奥林匹克公园站，D口出站步行约1.1公里；或从鼓楼乘公交82路到国家体育场东口。\n建议时间：4–10月 16:00–19:00；11–3月 15:00–17:30。\n拍照机位：鸟巢正面广场适合近景；大屯路桥可拍全景与夜景。\n避坑：中午阳光直射对比强；大型活动日人流密集。",
+        "en": "How to get there: Option 1—Bus 82 from Gulou Station, get off at the East Entrance of the National Stadium. Option 2—Subway Line 8 to Olympic Park, Exit D, then walk about 1.1 km.\nBest time: Apr–Oct 16:00–19:00; Nov–Mar 15:00–17:30.\nWhere to stand: The front plaza works for close shots; Datunlu Bridge is ideal for a full view and night scenes.\nAvoid: Harsh midday light and heavy crowds on event days."
       },
       "scanHint": {
-        "zh": "For the MVP, tap “Start puzzle” to continue; AR will be added next.",
-        "en": "For the MVP, tap “Start puzzle” to continue; AR will be added next."
+        "zh": "请回答下面的问题以解锁你的下一枚徽章。（AR 互动将在下一阶段上线）",
+        "en": "Please answer the question below to unlock your next badge. (AR interactions will be added in the next phase.)"
       },
       "story": {
         "intro": {
-          "zh": "You’ve passed the gate and the drumbeat. Final chapter: find modern order in woven steel.",
-          "en": "You’ve passed the gate and the drumbeat. Final chapter: find modern order in woven steel."
+          "zh": "几百年来，建筑总把骨架藏在墙体背后；但在这里，结构被大胆地展示出来。为什么建筑师要让钢结构成为外表，而不是把它遮起来？你的任务：找出这座现代地标背后的“激进想法”，并解释为什么它会成为鸟巢的身份。",
+          "en": "For centuries, buildings hid their frames behind walls. Here, the skeleton is on full display. Why would architects choose to expose raw steel instead of covering it up? Your mission: uncover the radical idea behind this modern icon."
         },
         "arBeat": {
           "zh": "See the steel as breathing fabric—structure becomes the surface.",
@@ -212,126 +281,126 @@
       "id": "quiz_qianmen_001",
       "type": "single_choice",
       "question": {
-        "zh": "In a city defense system, what is the Arrow Tower primarily used for?",
-        "en": "In a city defense system, what is the Arrow Tower primarily used for?"
+        "zh": "为什么前门要建在内城的南端，而不是随意选择别处？",
+        "en": "Why was Qianmen placed at the southern end of the Inner City rather than built randomly elsewhere?"
       },
       "choices": [
         {
           "key": "A",
-          "zh": "A ceremonial viewing platform",
-          "en": "A ceremonial viewing platform"
+          "zh": "作为首要入口，控制进入都城的动线与秩序",
+          "en": "To create a main entrance that controlled movement into the capital"
         },
         {
           "key": "B",
-          "zh": "A defensive and lookout strongpoint",
-          "en": "A defensive and lookout strongpoint"
+          "zh": "为集市与表演留出更大的户外空间",
+          "en": "To provide extra space for outdoor markets and performances"
         },
         {
           "key": "C",
-          "zh": "A market administration office",
-          "en": "A market administration office"
+          "zh": "给皇帝提供一个远离宫城的安静去处",
+          "en": "To give the emperor a quiet place away from the palace"
         }
       ],
-      "answerKey": "B",
+      "answerKey": "A",
       "hints": [
         {
           "level": 1,
-          "zh": "Look at the key words: “arrow” and “tower.”",
-          "en": "Look at the key words: “arrow” and “tower.”"
+          "zh": "观察它的位置：它在一条笔直的南北线上，正对着城市核心。这个位置为什么重要？",
+          "en": "Look at where the gate stands. It sits at a wide opening on a straight north–south line leading toward the heart of the city. Why might that position matter?"
         },
         {
           "level": 2,
-          "zh": "It relates to firing positions, lookout, and defense—not ceremonies or commerce.",
-          "en": "It relates to firing positions, lookout, and defense—not ceremonies or commerce."
+          "zh": "在帝国时代，并不是所有人都能随意进入内城。把主门放在南端入口有助于“管理谁能进入政治中心”。",
+          "en": "In imperial times, not everyone could enter the Inner City freely. Think about how placing a main gate at the southern entrance could help regulate who moved into the political center."
         }
       ],
       "explain": {
-        "zh": "The Arrow Tower is a key defensive node of the city gate system, combining lookout and protection.",
-        "en": "The Arrow Tower is a key defensive node of the city gate system, combining lookout and protection."
+        "zh": "前门被刻意设置在内城的南端入口，用来管理进入都城政治中心的秩序与动线。帝都沿南北中轴线组织空间，城门并非随意布置，而是服务于礼制与等级的城市结构。它的设置并不是为了娱乐活动或私人用途，而是对“谁能进入、如何进入”的制度化管理。",
+        "en": "Qianmen was deliberately positioned at the southern entrance of the Inner City to regulate access to the political center of Beijing. In imperial times, entry into the capital followed strict rules, and gates were placed according to a carefully planned layout. The city was organized along a north–south axis, and Qianmen marked the formal starting point of that structure. It was not designed for entertainment or private residence. Its placement reflects the structured and hierarchical nature of the imperial capital."
       }
     },
     {
       "id": "quiz_drum_001",
       "type": "single_choice",
       "question": {
-        "zh": "Before phones and personal clocks, how did a city broadcast time to everyone?",
-        "en": "Before phones and personal clocks, how did a city broadcast time to everyone?"
+        "zh": "作为都城的“报时器”，黄昏“定更”时，北京居民会听到怎样的声音，提示城门即将关闭？",
+        "en": "The Drum Tower once kept official time for the city. At dusk, what sound marked the “Dinggeng” (定更) hour, signaling the city gates were about to close?"
       },
       "choices": [
         {
           "key": "A",
-          "zh": "Market announcements",
-          "en": "Market announcements"
+          "zh": "钟楼的一声钟响",
+          "en": "A single, loud bell strike from the Bell Tower"
         },
         {
           "key": "B",
-          "zh": "Public signals like drums and bells",
-          "en": "Public signals like drums and bells"
+          "zh": "鼓楼的节奏击鼓，随后传来钟声回应",
+          "en": "The rhythmic beat of drums, followed by the sound of a bell"
         },
         {
           "key": "C",
-          "zh": "Messengers door-to-door",
-          "en": "Messengers door-to-door"
+          "zh": "全城寺庙同时敲钟",
+          "en": "The ringing of bells from all the temples in the city"
         }
       ],
       "answerKey": "B",
       "hints": [
         {
           "level": 1,
-          "zh": "Think about what “drum tower / bell tower” means as a pair.",
-          "en": "Think about what “drum tower / bell tower” means as a pair."
+          "zh": "想一想：古代报时往往是一种“仪式”，不太可能只有一个声音。",
+          "en": "Timekeeping in ancient cities was often a ceremony, not just a single noise."
         },
         {
           "level": 2,
-          "zh": "Public sounds had the widest reach—an ancient notification system.",
-          "en": "Public sounds had the widest reach—an ancient notification system."
+          "zh": "“定更”需要两座塔配合：一座先发出信号，另一座回应确认，让全城都能听到。",
+          "en": "The “Dinggeng” hour required both towers—one started the call, and the other responded so the whole city could confirm the time."
         }
       ],
       "explain": {
-        "zh": "Drums and bells broadcast time and civic order through public signals.",
-        "en": "Drums and bells broadcast time and civic order through public signals."
+        "zh": "正确答案是B。黄昏“定更”（约19点）报时通常由鼓楼先击鼓（传统说法为13通），随后钟楼鸣钟回应，形成“鼓—钟”的合奏，宣告“净街”时刻临近：百姓归家，城门将闭。它不是单独的鼓或钟，而是两座塔协同覆盖整座城市的声音网络，塑造了古都的日常秩序与夜晚节奏。",
+        "en": "The correct answer is B. At dusk, the “Dinggeng” ritual began with a series of drumbeats from the Drum Tower (traditionally described as 13 beats), followed by the Bell Tower answering with its sound. This coordinated duet announced the “cleaning the streets” hour—people were expected to return home and the city gates were about to close. It wasn’t a drum or a bell alone, but a paired signal system that structured nightly life in the old capital."
       }
     },
     {
       "id": "quiz_nest_001",
       "type": "single_choice",
       "question": {
-        "zh": "The Bird’s Nest’s signature structural aesthetics come from what?",
-        "en": "The Bird’s Nest’s signature structural aesthetics come from what?"
+        "zh": "为什么“鸟巢”把钢结构暴露在建筑外侧？",
+        "en": "Why does the Bird's Nest have its steel structure exposed on the outside?"
       },
       "choices": [
         {
           "key": "A",
-          "zh": "Masonry",
-          "en": "Masonry"
+          "zh": "为了更方便维护与重新刷漆",
+          "en": "To make maintenance and repainting easier"
         },
         {
           "key": "B",
-          "zh": "Timber joinery",
-          "en": "Timber joinery"
+          "zh": "为了塑造“巢”的象征，让结构本身成为建筑身份",
+          "en": "To create a symbolic \"nest\" where structure becomes identity"
         },
         {
           "key": "C",
-          "zh": "Woven steel structure",
-          "en": "Woven steel structure"
+          "zh": "为了让风穿过，从而增强抗震能力",
+          "en": "To allow wind through for earthquake resistance"
         }
       ],
-      "answerKey": "C",
+      "answerKey": "B",
       "hints": [
         {
           "level": 1,
-          "zh": "Does the façade look woven like a nest, or stacked like masonry?",
-          "en": "Does the façade look woven like a nest, or stacked like masonry?"
+          "zh": "先看外形：它像不像自然界里的“巢”？这种形象来自哪里？",
+          "en": "Look at the shape—does it remind you of something found in nature?"
         },
         {
           "level": 2,
-          "zh": "Material and structure directly become the visual expression.",
-          "en": "Material and structure directly become the visual expression."
+          "zh": "建筑师想让建筑本身看起来像一个“摇篮”。缠绕的枝条会形成什么？",
+          "en": "The architects wanted the building itself to look like a cradle. What object does tangled twigs create?"
         }
       ],
       "explain": {
-        "zh": "Its iconic look comes from interwoven steel—structure as aesthetics.",
-        "en": "Its iconic look comes from interwoven steel—structure as aesthetics."
+        "zh": "鸟巢把结构“外化”，是为了让建筑的象征意义与视觉身份直接由钢结构承担：像枝条交织成巢一样，结构就是形象本身。A并不成立：复杂的钢网反而让维护更难；C也不是主因：开放的结构确实会让风穿行，但抗震并非“把结构露在外面”的主要目的。它更像一次公开声明——现代结构工程可以成为美学语言。",
+        "en": "The Bird’s Nest exposes its structure so the building’s identity is carried by the structure itself—like twigs woven into a nest, the frame becomes the image. A is incorrect: the complex steel weave makes maintenance harder, not easier. C is also not the primary reason: wind can pass through the open lattice, but earthquake resistance was not the main motivation for putting the structure on display. The key idea is symbolic and architectural—structure becomes meaning."
       }
     }
   ]

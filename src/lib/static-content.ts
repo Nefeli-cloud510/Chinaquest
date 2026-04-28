@@ -5,11 +5,16 @@ export type StaticI18nText = { zh: string; en: string };
 export type StaticRoute = {
   id: string;
   title: StaticI18nText;
+  headline?: StaticI18nText;
+  tagline?: StaticI18nText;
   summary: StaticI18nText;
+  intro?: StaticI18nText;
   estimatedMinutes: number;
   city: string;
   poiIds: string[];
   rules: { zh: string[]; en: string[] };
+  pacing?: { zh: string[]; en: string[] };
+  prep?: { zh: string[]; en: string[] };
   cover: { gradient: string; accent: "red" | "gold" };
 };
 
@@ -20,6 +25,8 @@ export type StaticPoi = {
   geo: { lat: number; lng: number };
   title: StaticI18nText;
   short: StaticI18nText;
+  overview?: StaticI18nText;
+  image?: string;
   arriveHint: StaticI18nText;
   scanHint: StaticI18nText;
   story: {
@@ -47,6 +54,7 @@ export type StaticBadge = {
   desc: StaticI18nText;
   color: "red" | "gold" | "ink";
   icon: "gate" | "drum" | "nest" | "axis";
+  image?: string;
 };
 
 export type StaticContent = {
@@ -69,5 +77,9 @@ export function getStaticPoi(poiId: string) {
 
 export function getStaticQuiz(quizId: string) {
   return staticContent.quizzes.find((q) => q.id === quizId) ?? null;
+}
+
+export function getStaticBadge(badgeId: string) {
+  return staticContent.badges.find((b) => b.id === badgeId) ?? null;
 }
 

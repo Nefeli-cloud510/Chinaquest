@@ -46,10 +46,15 @@ export default async function RouteDetailPage(props: {
             </div>
             <div>
               <h1 className="text-3xl font-semibold tracking-tight text-white">
-                {route.title.en}
+                {route.headline?.en ?? route.title.en}
               </h1>
+              {route.headline?.zh ? (
+                <div className="mt-2 max-w-3xl text-sm leading-6 text-white/80">
+                  {route.headline.zh}
+                </div>
+              ) : null}
               <p className="mt-2 max-w-3xl text-sm leading-6 text-white/80">
-                {route.summary.en}
+                {route.tagline?.en ?? route.summary.en}
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
@@ -70,6 +75,15 @@ export default async function RouteDetailPage(props: {
           </div>
         </Card>
 
+        {route.intro?.en ? (
+          <Card>
+            <div className="text-sm font-semibold">Route overview</div>
+            <div className="mt-2 whitespace-pre-line text-sm leading-6 text-[color:var(--cq-muted)]">
+              {route.intro.en}
+            </div>
+          </Card>
+        ) : null}
+
         <div id="stops" className="grid gap-6 md:grid-cols-3">
           {pois.map((p) => (
             <Card key={p!.id}>
@@ -89,14 +103,38 @@ export default async function RouteDetailPage(props: {
           ))}
         </div>
 
-        <Card>
-          <div className="text-sm font-semibold">How it works</div>
-          <div className="mt-2 grid gap-2 text-sm text-[color:var(--cq-muted)]">
-            {route.rules.en.map((t) => (
-              <div key={t}>· {t}</div>
-            ))}
-          </div>
-        </Card>
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card>
+            <div className="text-sm font-semibold">How it works</div>
+            <div className="mt-2 grid gap-2 text-sm text-[color:var(--cq-muted)]">
+              {route.rules.en.map((t) => (
+                <div key={t}>· {t}</div>
+              ))}
+            </div>
+          </Card>
+
+          {route.pacing?.en?.length ? (
+            <Card>
+              <div className="text-sm font-semibold">Pacing</div>
+              <div className="mt-2 grid gap-2 text-sm text-[color:var(--cq-muted)]">
+                {route.pacing.en.map((t) => (
+                  <div key={t}>· {t}</div>
+                ))}
+              </div>
+            </Card>
+          ) : null}
+        </div>
+
+        {route.prep?.en?.length ? (
+          <Card>
+            <div className="text-sm font-semibold">Before you go</div>
+            <div className="mt-2 grid gap-2 text-sm text-[color:var(--cq-muted)]">
+              {route.prep.en.map((t) => (
+                <div key={t}>· {t}</div>
+              ))}
+            </div>
+          </Card>
+        ) : null}
       </div>
     </SiteShell>
   );

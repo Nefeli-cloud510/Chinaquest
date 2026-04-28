@@ -16,9 +16,6 @@ export default async function RoutesPage() {
                 Pick a route, complete each stop’s puzzle, earn badges, and generate a report.
               </p>
             </div>
-            <Button href="/run" variant="ghost">
-              My runs
-            </Button>
           </div>
         </Card>
 
@@ -40,8 +37,8 @@ export default async function RoutesPage() {
                 <div className="mt-4 text-xl font-semibold text-white">
                   {r.title.en}
                 </div>
-                <div className="mt-1 text-sm text-white/80">
-                  {r.summary.en}
+                <div className="mt-1 text-sm text-white/85">
+                  {r.tagline?.en ?? r.summary.en}
                 </div>
                 <div className="mt-4 flex flex-wrap items-center gap-3">
                   <Button href={`/routes/${r.id}`} variant="secondary" size="sm">

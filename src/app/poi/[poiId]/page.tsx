@@ -1,6 +1,8 @@
 import { SiteShell } from "@/components/shell";
 import { Button, Card, Pill } from "@/components/ui";
+import { withBasePath } from "@/lib/base-path";
 import { getStaticPoi, getStaticRoute, staticContent } from "@/lib/static-content";
+import { POIARWrapper } from "@/components/ar/poi-ar-wrapper";
 
 export function generateStaticParams() {
   return staticContent.pois.map((p) => ({ poiId: p.id }));
@@ -39,7 +41,6 @@ export default async function PoiPage(props: {
           <div className="relative grid gap-4">
             <div className="flex flex-wrap items-center gap-2">
               <Pill tone="gold">Stop {poi.order}</Pill>
-              <Pill>Preview</Pill>
               <Pill>{poi.title.en}</Pill>
             </div>
             <div>
@@ -58,13 +59,6 @@ export default async function PoiPage(props: {
                 Start puzzle
               </Button>
               <Button
-                href="#"
-                variant="ghost"
-                className="pointer-events-none border-white/20 text-white opacity-70"
-              >
-                Open AR (next phase)
-              </Button>
-              <Button
                 href={`/routes/${poi.routeId}`}
                 variant="ghost"
                 className="border-white/20 text-white hover:bg-white/10"
@@ -75,24 +69,43 @@ export default async function PoiPage(props: {
           </div>
         </Card>
 
+        <POIARWrapper
+          poiId={poiId}
+          title={poi.title}
+          short={poi.short}
+          image={poi.image}
+          story={poi.story}
+          quizUrl={`/poi/${poiId}/quiz`}
+        />
+
         <div className="grid gap-6 md:grid-cols-2">
           <Card>
-            <div className="text-sm font-semibold">Arrival tips</div>
-            <div className="mt-2 text-sm leading-6 text-[color:var(--cq-muted)]">
-              {poi.arriveHint.en}
+            <div className="text-sm font-semibold">Stop overview</div>
+            {poi.image ? (
+              <div className="mt-3 overflow-hidden rounded-2xl border border-[color:var(--cq-border)]">
+                <img
+                  src={withBasePath(`/${poi.image}`)}
+                  alt={poi.title.en}
+                  className="h-44 w-full object-cover"
+                  loading="lazy"
+                />
+              </div>
+            ) : null}
+            <div className="mt-2 whitespace-pre-line text-sm leading-6 text-[color:var(--cq-muted)]">
+              {poi.overview?.en ?? poi.story.intro.en}
             </div>
           </Card>
           <Card>
-            <div className="text-sm font-semibold">Story hook</div>
-            <div className="mt-2 text-sm leading-6 text-[color:var(--cq-muted)]">
-              {poi.story.intro.en}
+            <div className="text-sm font-semibold">Arrival tips</div>
+            <div className="mt-2 whitespace-pre-line text-sm leading-6 text-[color:var(--cq-muted)]">
+              {poi.arriveHint.en}
             </div>
           </Card>
         </div>
 
         <Card>
-          <div className="text-sm font-semibold">Scan instructions (MVP placeholder)</div>
-          <div className="mt-2 text-sm leading-6 text-[color:var(--cq-muted)]">
+          <div className="text-sm font-semibold">Mission prompt</div>
+          <div className="mt-2 whitespace-pre-line text-sm leading-6 text-[color:var(--cq-muted)]">
             {poi.scanHint.en}
           </div>
         </Card>

@@ -1,6 +1,10 @@
+'use client';
+
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { AIAssistant } from "@/components/ai-assistant";
+import { LanguageProvider } from "@/lib/language";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -12,12 +16,6 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "ChinaQuest · Beijing Cultural Quest",
-  description:
-    "A customizable, in-depth cultural experience for international travelers: route quests, light interactions, badges, and post-trip reports.",
-};
-
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -28,7 +26,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {children}
+        <LanguageProvider>
+          {children}
+          <AIAssistant />
+        </LanguageProvider>
       </body>
     </html>
   );

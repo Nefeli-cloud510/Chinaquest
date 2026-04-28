@@ -1,7 +1,7 @@
 import { SiteShell } from "@/components/shell";
 import { QuizClient } from "@/components/quiz-client";
 import { Button, Card, Pill } from "@/components/ui";
-import { getStaticPoi, getStaticQuiz, staticContent } from "@/lib/static-content";
+import { getStaticBadge, getStaticPoi, getStaticQuiz, staticContent } from "@/lib/static-content";
 
 export function generateStaticParams() {
   return staticContent.pois.map((p) => ({ poiId: p.id }));
@@ -36,6 +36,8 @@ export default async function PoiQuizPage(props: {
       </SiteShell>
     );
   }
+  const badge = getStaticBadge(poi.rewards.badgeId);
+  const finale = getStaticBadge("badge_axis_complete");
 
   return (
     <SiteShell active="routes">
@@ -56,7 +58,7 @@ export default async function PoiQuizPage(props: {
           </Button>
         </Card>
 
-        <QuizClient poiId={poiId} quiz={quiz} />
+        <QuizClient poiId={poiId} quiz={quiz} badge={badge ?? undefined} finale={finale ?? undefined} />
       </div>
     </SiteShell>
   );
