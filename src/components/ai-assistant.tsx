@@ -1,7 +1,10 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { Button, Card } from './ui';
+
+const API_URL = 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions';
+const API_KEY = typeof window !== 'undefined' ? (window as any).__QWEN_API_KEY : '';
 
 export function AIAssistant() {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,24 +14,15 @@ export function AIAssistant() {
   const [isLoading, setIsLoading] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
+  }, []);
 
   useEffect(() => {
     scrollToBottom();
-  }, [messages]);
+  }, [messages, scrollToBottom]);
 
-  const handleSend = async () => {
-    if (!input.trim()) return;
-
-    const userMessage = { role: 'user' as const, content: input };
-    setMessages([...messages, userMessage]);
-    setInput('');
-    setIsLoading(true);
-
-    try {
-      const systemPrompt = `You are ChinaQuest's "Cultural Explorer", a professional cultural guide and travel advisors. Your tasks are:
+  const systemPrompt = `You are ChinaQuest's "Cultural Explorer", a professional cultural guide and travel advisors. Your tasks are:
 1. Provide professional, friendly, and engaging cultural explanations for international tourists
 2. Offer accurate information based on Chinese culture and history
 3. Describe attractions and cultural phenomena in vivid language
@@ -41,20 +35,29 @@ Important guidelines:
 - Provide direct answers to the user's questions
 - Focus on providing valuable cultural insights and practical information`;
 
+  const handleSend = useCallback(async () => {
+    if (!input.trim() || isLoading) return;
+
+    const userMessage = { role: 'user' as const, content: input.trim() };
+    const newMessages = [...messages, userMessage];
+    setMessages(newMessages);
+    setInput('');
+    setIsLoading(true);
+
+    try {
       const allMessages = [
-        { role: 'system', content: systemPrompt },
-        ...messages.map(msg => ({
-          role: msg.role === 'user' ? 'user' : 'assistant',
+        { role: 'system' as const, content: systemPrompt },
+        ...newMessages.map(msg => ({
+          role: msg.role === 'user' ? 'user' as const : 'assistant' as const,
           content: msg.content
-        })),
-        { role: 'user', content: input }
+        }))
       ];
 
-      const response = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
+      const response = await fetch(API_URL, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_QWEN_API_KEY || ''}`,
           'Content-Type': 'application/json',
+          'Authorization': `Bearer sk-0e76f1eb9a89460e8f6112f77078d018`,
         },
         body: JSON.stringify({
           model: 'qwen-plus',
@@ -65,23 +68,25 @@ Important guidelines:
       });
 
       if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('API Error:', response.status, errorData);
         throw new Error(`API error: ${response.status}`);
       }
 
       const data = await response.json();
       
-      if (data.choices && data.choices[0] && data.choices[0].message) {
+      if (data.choices?.[0]?.message?.content) {
         setMessages(prev => [...prev, { role: 'ai', content: data.choices[0].message.content }]);
       } else {
         throw new Error('Invalid response format');
       }
     } catch (error) {
-      console.error('API error:', error);
+      console.error('AI error:', error);
       setMessages(prev => [...prev, { role: 'ai', content: 'Sorry, I am temporarily unavailable. Please try again later.' }]);
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [input, messages, isLoading]);
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
@@ -156,13 +161,17 @@ Important guidelines:
                 placeholder={activeTab === 'scene' ? 'Enter attraction name...' : activeTab === 'summary' ? 'Enter keywords...' : 'Ask me anything...'}
                 className="flex-1 h-11 rounded-2xl border bg-[color:var(--cq-surface-2)] px-4 text-sm border-[color:var(--cq-border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--cq-gold)]"
               />
-              <Button
+              <button
                 onClick={handleSend}
-                size="sm"
-                className={isLoading || !input.trim() ? 'opacity-50 cursor-not-allowed' : ''}
+                disabled={isLoading || !input.trim()}
+                className={`h-11 w-11 rounded-full flex items-center justify-center text-sm font-semibold transition ${
+                  isLoading || !input.trim()
+                    ? 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                    : 'bg-[color:var(--cq-gold)] text-[color:var(--cq-ink)] hover:bg-[color:var(--cq-gold-2)]'
+                }`}
               >
                 {isLoading ? '...' : '↑'}
-              </Button>
+              </button>
             </div>
           </div>
         </Card>

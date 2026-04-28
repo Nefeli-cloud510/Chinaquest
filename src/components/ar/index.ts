@@ -9,3 +9,4 @@ export { ARLoading } from './ar-loading';
 export { ARError } from './ar-error';
 export { ARPermission } from './ar-permission';
 export { ARScene } from './ar-scene';
+export { ARLocationScene } from './ar-location-scene';
