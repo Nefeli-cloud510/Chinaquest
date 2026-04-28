@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useLanguage } from '@/lib/language';
 import { ARPermission } from './ar-permission';
 import { ARScanningGuide } from './ar-scanning-guide';
@@ -23,12 +23,12 @@ interface ARSceneProps {
   onAnswerQuiz: () => void;
 }
 
-type ARState = 
-  | 'permission' 
-  | 'loading' 
-  | 'scanning' 
-  | 'active' 
-  | 'narrative' 
+type ARState =
+  | 'permission'
+  | 'loading'
+  | 'scanning'
+  | 'active'
+  | 'narrative'
   | 'error'
   | 'success';
 
@@ -36,12 +36,44 @@ export function ARScene({ poiId, narrative, annotations = [], onClose, onAnswerQ
   const { language } = useLanguage();
   const [arState, setARState] = useState<ARState>('permission');
   const [currentNarrativeIndex, setCurrentNarrativeIndex] = useState(0);
-  const [activeHintIndex, setActiveHintIndex] = useState<number | null>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+
+  const cleanupCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  }, []);
+
+  const startCamera = useCallback(async () => {
+    setARState('loading');
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } },
+      });
+
+      streamRef.current = stream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+      }
+
+      setTimeout(() => {
+        setARState('scanning');
+      }, 1000);
+    } catch (err) {
+      console.error('Camera error:', err);
+      setARState('error');
+    }
+  }, []);
 
   const handlePermissionAllow = useCallback(() => {
-    setARState('loading');
-    setTimeout(() => setARState('scanning'), 1500);
-  }, []);
+    startCamera();
+  }, [startCamera]);
 
   const handlePermissionDeny = useCallback(() => {
     setARState('error');
@@ -64,12 +96,25 @@ export function ARScene({ poiId, narrative, annotations = [], onClose, onAnswerQ
   }, [currentNarrativeIndex, narrative.hints.length]);
 
   const handleRetry = useCallback(() => {
-    setARState('scanning');
-  }, []);
+    cleanupCamera();
+    startCamera();
+  }, [cleanupCamera, startCamera]);
 
   const handleFallback = useCallback(() => {
+    cleanupCamera();
     onAnswerQuiz();
-  }, [onAnswerQuiz]);
+  }, [cleanupCamera, onAnswerQuiz]);
+
+  const handleClose = useCallback(() => {
+    cleanupCamera();
+    onClose();
+  }, [cleanupCamera, onClose]);
+
+  useEffect(() => {
+    return () => {
+      cleanupCamera();
+    };
+  }, [cleanupCamera]);
 
   return (
     <>
@@ -83,25 +128,40 @@ export function ARScene({ poiId, narrative, annotations = [], onClose, onAnswerQ
 
       {/* 扫描引导 */}
       {arState === 'scanning' && (
-        <ARScanningGuide onDetected={handleScanningDone} />
+        <>
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="fixed inset-0 w-full h-full object-cover z-30"
+          />
+          <ARScanningGuide onDetected={handleScanningDone} />
+        </>
       )}
 
       {/* AR活跃场景 */}
       {arState === 'active' && (
-        <div className="fixed inset-0 z-40 bg-black/50">
-          {/* 相机背景（模拟） */}
-          <div className="absolute inset-0 bg-gradient-to-br from-gray-800 to-gray-900" />
-          
+        <div className="fixed inset-0 z-40">
+          {/* 相机画面 */}
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="absolute inset-0 w-full h-full object-cover"
+          />
+
           {/* 顶部操作栏 */}
           <div className="absolute top-4 left-4 right-4 z-50 flex items-center justify-between">
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60"
             >
               <span className="text-lg">✕</span>
             </button>
             <button
-              onClick={onAnswerQuiz}
+              onClick={handleFallback}
               className="px-4 h-10 rounded-full bg-[color:var(--cq-gold)] text-[color:var(--cq-ink)] text-sm font-semibold hover:bg-[color:var(--cq-gold-2)]"
             >
               {language === 'zh' ? '返回答题' : 'Answer Quiz'}
@@ -122,8 +182,8 @@ export function ARScene({ poiId, narrative, annotations = [], onClose, onAnswerQ
           {/* 底部提示 */}
           <div className="absolute bottom-6 left-4 right-4">
             <div className="p-4 bg-black/60 backdrop-blur-sm rounded-2xl text-white text-sm text-center">
-              {language === 'zh' 
-                ? '点击标注点查看详细信息，或点击返回答题' 
+              {language === 'zh'
+                ? '点击标注点查看详细信息，或点击返回答题'
                 : 'Tap annotations for details, or return to answer the quiz'}
             </div>
           </div>
@@ -132,16 +192,25 @@ export function ARScene({ poiId, narrative, annotations = [], onClose, onAnswerQ
 
       {/* 叙事卡片 */}
       {arState === 'narrative' && (
-        <ARNarrativeCard
-          content={
-            currentNarrativeIndex === 0 
-              ? narrative.intro 
-              : narrative.hints[currentNarrativeIndex - 1]
-          }
-          type={currentNarrativeIndex === 0 ? 'intro' : 'hint'}
-          onClose={handleNarrativeClose}
-          onContinue={handleNarrativeContinue}
-        />
+        <>
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="fixed inset-0 w-full h-full object-cover z-30"
+          />
+          <ARNarrativeCard
+            content={
+              currentNarrativeIndex === 0
+                ? narrative.intro
+                : narrative.hints[currentNarrativeIndex - 1]
+            }
+            type={currentNarrativeIndex === 0 ? 'intro' : 'hint'}
+            onClose={handleNarrativeClose}
+            onContinue={handleNarrativeContinue}
+          />
+        </>
       )}
 
       {/* 错误提示 */}

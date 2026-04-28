@@ -1,9 +1,35 @@
-import { SiteShell } from "@/components/shell";
-import { Button, Card, Pill } from "@/components/ui";
-import { staticContent } from "@/lib/static-content";
+'use client';
 
-export default async function HomePage() {
+import { useLanguage } from '@/lib/language';
+import { SiteShell } from '@/components/shell';
+import { Button, Card, Pill } from '@/components/ui';
+import { staticContent } from '@/lib/static-content';
+
+const homeLabels = {
+  beijing: { zh: '北京', en: 'Beijing' },
+  title: { zh: '通过北京中轴线阅读这座城市', en: 'Read Beijing through its Central Axis' },
+  description: { zh: '路线任务、轻量互动、徽章与行程探索报告。', en: 'Route quests, light interactions, badges, and a post-journey explorer report.' },
+  startExploring: { zh: '开始探索', en: 'Start exploring' },
+  about: { zh: '关于', en: 'About' },
+  adminSignIn: { zh: '管理员登录', en: 'Admin sign-in' },
+  featuredRoute: { zh: '精选路线', en: 'Featured route' },
+  demoScope: { zh: '演示范围', en: 'Demo scope' },
+  demoPlan: { zh: '当前演示版本', en: 'Current demo plan' },
+  demoDesc: { zh: '核心交互循环、数据模型、分析日志和管理员编辑已准备就绪。', en: 'The core loop, data model, analytics logging, and admin editing are ready for real-world iteration.' },
+  start: { zh: '开始', en: 'Start' },
+  admin: { zh: '管理员', en: 'Admin' },
+  contentAnalytics: { zh: '内容与分析', en: 'Content & analytics' },
+  contentDesc: { zh: '编辑内容并下载分析数据。', en: 'Edit content and download analytics.' },
+  openAdmin: { zh: '打开管理后台', en: 'Open admin' },
+  viewDetails: { zh: '查看详情', en: 'View details' },
+  webMvp: { zh: '网页版', en: 'Web MVP' },
+  stops: { zh: '站', en: 'stops' },
+  puzzles: { zh: '谜题', en: 'puzzles' },
+};
+
+export default function HomePage() {
   const route = staticContent.routes[0];
+  const { language } = useLanguage();
 
   return (
     <SiteShell active="home">
@@ -15,29 +41,29 @@ export default async function HomePage() {
           />
           <div className="relative grid gap-5">
             <div className="flex flex-wrap items-center gap-2">
-              <Pill tone="gold">Beijing</Pill>
+              <Pill tone="gold">{homeLabels.beijing[language]}</Pill>
               <Pill tone="red">ChinaQuest</Pill>
-              <Pill>Web MVP</Pill>
+              <Pill>{homeLabels.webMvp[language]}</Pill>
             </div>
 
             <div className="grid gap-2">
               <h1 className="text-balance text-3xl font-semibold tracking-tight text-white md:text-4xl">
-                Read Beijing through its Central Axis
+                {homeLabels.title[language]}
               </h1>
               <p className="max-w-2xl text-pretty text-sm leading-6 text-white/80 md:text-base">
-                Route quests, light interactions, badges, and a post-journey explorer report.
+                {homeLabels.description[language]}
               </p>
             </div>
 
             <div className="flex flex-wrap gap-3">
               <Button href="/routes" variant="secondary">
-                Start exploring
+                {homeLabels.startExploring[language]}
               </Button>
               <Button href="/about" variant="ghost" className="border-white/20 text-white hover:bg-white/10">
-                About
+                {homeLabels.about[language]}
               </Button>
               <Button href="/login" variant="ghost" className="border-white/20 text-white hover:bg-white/10">
-                Admin sign-in
+                {homeLabels.adminSignIn[language]}
               </Button>
             </div>
           </div>
@@ -46,43 +72,43 @@ export default async function HomePage() {
         <div className="grid gap-6 md:grid-cols-3">
           <Card>
             <div className="text-xs font-medium text-[color:var(--cq-muted)]">
-              Featured route
+              {homeLabels.featuredRoute[language]}
             </div>
-            <div className="mt-2 text-lg font-semibold">{route.title.en}</div>
+            <div className="mt-2 text-lg font-semibold">{route.title[language]}</div>
             <div className="mt-1 text-sm text-[color:var(--cq-muted)]">
-              3 stops · 3 puzzles
+              {route.poiIds.length} {homeLabels.stops[language]} · {route.poiIds.length} {homeLabels.puzzles[language]}
             </div>
             <div className="mt-4">
               <Button href={`/routes/${route.id}`} size="sm">
-                View details
+                {homeLabels.viewDetails[language]}
               </Button>
             </div>
           </Card>
 
           <Card>
             <div className="text-xs font-medium text-[color:var(--cq-muted)]">
-              Demo scope
+              {homeLabels.demoScope[language]}
             </div>
-            <div className="mt-2 text-lg font-semibold">Current demo plan</div>
+            <div className="mt-2 text-lg font-semibold">{homeLabels.demoPlan[language]}</div>
             <div className="mt-1 text-sm text-[color:var(--cq-muted)]">
-              The core loop, data model, analytics logging, and admin editing are ready for real-world iteration.
+              {homeLabels.demoDesc[language]}
             </div>
             <div className="mt-4">
               <Button href="/routes" size="sm" variant="secondary">
-                Start
+                {homeLabels.start[language]}
               </Button>
             </div>
           </Card>
 
           <Card tone="ink">
             <div className="text-xs font-medium text-[color:var(--cq-muted)]">
-              Admin
+              {homeLabels.admin[language]}
             </div>
-            <div className="mt-2 text-lg font-semibold">Content & analytics</div>
-            <div className="mt-1 text-sm text-white/70">Edit content and download analytics.</div>
+            <div className="mt-2 text-lg font-semibold">{homeLabels.contentAnalytics[language]}</div>
+            <div className="mt-1 text-sm text-white/70">{homeLabels.contentDesc[language]}</div>
             <div className="mt-4">
               <Button href="/admin" size="sm" variant="secondary">
-                Open admin
+                {homeLabels.openAdmin[language]}
               </Button>
             </div>
           </Card>

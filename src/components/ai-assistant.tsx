@@ -28,32 +28,56 @@ export function AIAssistant() {
     setIsLoading(true);
 
     try {
-      // 调用实际的API
-      const response = await fetch('/api/ai', {
+      const systemPrompt = `You are ChinaQuest's "Cultural Explorer", a professional cultural guide and travel advisors. Your tasks are:
+1. Provide professional, friendly, and engaging cultural explanations for international tourists
+2. Offer accurate information based on Chinese culture and history
+3. Describe attractions and cultural phenomena in vivid language
+4. Encourage tourists to deeply experience and explore Chinese culture
+5. Maintain a professional and enthusiastic service attitude
+
+Important guidelines:
+- Always respond in English
+- Do not repeat the user's questions or keywords
+- Provide direct answers to the user's questions
+- Focus on providing valuable cultural insights and practical information`;
+
+      const allMessages = [
+        { role: 'system', content: systemPrompt },
+        ...messages.map(msg => ({
+          role: msg.role === 'user' ? 'user' : 'assistant',
+          content: msg.content
+        })),
+        { role: 'user', content: input }
+      ];
+
+      const response = await fetch('https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${process.env.NEXT_PUBLIC_QWEN_API_KEY || ''}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          messages: messages.map(msg => ({
-            role: msg.role === 'user' ? 'user' : 'assistant',
-            content: msg.content
-          })),
-          type: activeTab,
-          prompt: input
+          model: 'qwen-plus',
+          messages: allMessages,
+          temperature: 0.7,
+          max_tokens: 1000,
         }),
       });
 
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+
       const data = await response.json();
       
-      if (data.success) {
-        setMessages(prev => [...prev, { role: 'ai', content: data.message }]);
+      if (data.choices && data.choices[0] && data.choices[0].message) {
+        setMessages(prev => [...prev, { role: 'ai', content: data.choices[0].message.content }]);
       } else {
-        setMessages(prev => [...prev, { role: 'ai', content: data.message || '抱歉，暂时无法处理您的请求，请稍后再试。' }]);
+        throw new Error('Invalid response format');
       }
     } catch (error) {
       console.error('API error:', error);
-      setMessages(prev => [...prev, { role: 'ai', content: '抱歉，暂时无法处理您的请求，请稍后再试。' }]);
+      setMessages(prev => [...prev, { role: 'ai', content: 'Sorry, I am temporarily unavailable. Please try again later.' }]);
     } finally {
       setIsLoading(false);
     }
@@ -128,8 +152,8 @@ export function AIAssistant() {
                 type="text"
                 value={input}
                 onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSend()}
-                placeholder={activeTab === 'scene' ? 'Enter attraction name for introduction...' : activeTab === 'summary' ? 'Enter experience keywords for summary...' : 'Enter your question...'}
+                onKeyDown={(e) => e.key === 'Enter' && !isLoading && handleSend()}
+                placeholder={activeTab === 'scene' ? 'Enter attraction name...' : activeTab === 'summary' ? 'Enter keywords...' : 'Ask me anything...'}
                 className="flex-1 h-11 rounded-2xl border bg-[color:var(--cq-surface-2)] px-4 text-sm border-[color:var(--cq-border)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[color:var(--cq-gold)]"
               />
               <Button
@@ -137,7 +161,7 @@ export function AIAssistant() {
                 size="sm"
                 className={isLoading || !input.trim() ? 'opacity-50 cursor-not-allowed' : ''}
               >
-                {isLoading ? 'Sending...' : '↑'}
+                {isLoading ? '...' : '↑'}
               </Button>
             </div>
           </div>
