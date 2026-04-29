@@ -29,9 +29,14 @@ export function ARLocationScene({ poiId, narrative, annotations = [], onClose, o
   const [currentNarrativeIndex, setCurrentNarrativeIndex] = useState(0);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const [cameraReady, setCameraReady] = useState(false);
+  const loadingTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [hasError, setHasError] = useState(false);
 
   const cleanupCamera = useCallback(() => {
+    if (loadingTimeoutRef.current) {
+      clearTimeout(loadingTimeoutRef.current);
+      loadingTimeoutRef.current = null;
+    }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
@@ -39,37 +44,47 @@ export function ARLocationScene({ poiId, narrative, annotations = [], onClose, o
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
-    setCameraReady(false);
   }, []);
 
   const startCamera = useCallback(async () => {
     setARState('loading');
+    setHasError(false);
+
+    if (loadingTimeoutRef.current) {
+      clearTimeout(loadingTimeoutRef.current);
+    }
+
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         video: { 
           facingMode: 'environment',
-          width: { ideal: 1280 },
-          height: { ideal: 720 },
+          width: { ideal: 640 },
+          height: { ideal: 480 },
         },
         audio: false,
       });
 
       streamRef.current = stream;
-
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play().then(() => {
-            setCameraReady(true);
-            setTimeout(() => setARState('narrative'), 500);
-          });
-        };
-      }
+      
+      loadingTimeoutRef.current = setTimeout(() => {
+        setARState('narrative');
+      }, 1500);
     } catch (err) {
+      if (loadingTimeoutRef.current) {
+        clearTimeout(loadingTimeoutRef.current);
+      }
       console.error('Camera error:', err);
+      setHasError(true);
       setARState('error');
     }
   }, []);
+
+  useEffect(() => {
+    if ((arState === 'narrative' || arState === 'active') && streamRef.current && videoRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+      videoRef.current.play().catch(err => console.error('Video play error:', err));
+    }
+  }, [arState]);
 
   const handlePermissionAllow = useCallback(() => {
     startCamera();
@@ -93,7 +108,7 @@ export function ARLocationScene({ poiId, narrative, annotations = [], onClose, o
 
   const handleRetry = useCallback(() => {
     cleanupCamera();
-    startCamera();
+    setTimeout(() => startCamera(), 300);
   }, [cleanupCamera, startCamera]);
 
   const handleFallback = useCallback(() => {
@@ -122,8 +137,8 @@ export function ARLocationScene({ poiId, narrative, annotations = [], onClose, o
       {/* 加载中 */}
       {arState === 'loading' && <ARLoading message={{ zh: '正在启动相机...', en: 'Starting camera...' }} />}
 
-      {/* 叙事卡片 - 相机画面作为背景 */}
-      {arState === 'narrative' && (
+      {/* 相机画面 + UI (narrative 和 active 状态) */}
+      {(arState === 'narrative' || arState === 'active') && (
         <>
           {/* 相机画面 - 全屏背景 */}
           <video
@@ -131,7 +146,8 @@ export function ARLocationScene({ poiId, narrative, annotations = [], onClose, o
             autoPlay
             playsInline
             muted
-            className="fixed inset-0 w-full h-full object-cover z-10"
+            className="fixed inset-0 w-full h-full object-cover z-10 bg-black"
+            style={{ transform: 'scale(1.01)' }}
           />
           
           {/* 叠加在相机画面上的UI */}
@@ -153,52 +169,24 @@ export function ARLocationScene({ poiId, narrative, annotations = [], onClose, o
             </div>
           </div>
 
-          {/* 叙事卡片 - 底部弹出 */}
-          <div className="pointer-events-auto">
-            <ARNarrativeCard
-              content={
-                currentNarrativeIndex === 0
-                  ? narrative.intro
-                  : narrative.hints[currentNarrativeIndex - 1]
-              }
-              type={currentNarrativeIndex === 0 ? 'intro' : 'hint'}
-              onClose={handleNarrativeClose}
-              onContinue={handleNarrativeContinue}
-            />
-          </div>
-        </>
-      )}
+          {/* 叙事卡片 - 底部弹出 (仅在narrative状态显示) */}
+          {arState === 'narrative' && (
+            <div className="pointer-events-auto">
+              <ARNarrativeCard
+                content={
+                  currentNarrativeIndex === 0
+                    ? narrative.intro
+                    : narrative.hints[currentNarrativeIndex - 1]
+                }
+                type={currentNarrativeIndex === 0 ? 'intro' : 'hint'}
+                onClose={handleNarrativeClose}
+                onContinue={handleNarrativeContinue}
+              />
+            </div>
+          )}
 
-      {/* AR活跃场景 - 相机画面 + 标注 */}
-      {arState === 'active' && (
-        <div className="fixed inset-0 z-40">
-          {/* 相机画面 */}
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-
-          {/* 顶部操作栏 */}
-          <div className="absolute top-4 left-4 right-4 z-50 flex items-center justify-between">
-            <button
-              onClick={handleClose}
-              className="w-10 h-10 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/60 transition"
-            >
-              ✕
-            </button>
-            <button
-              onClick={handleFallback}
-              className="px-4 h-10 rounded-full bg-[color:var(--cq-gold)] text-[color:var(--cq-ink)] text-sm font-semibold hover:bg-[color:var(--cq-gold-2)] transition"
-            >
-              {language === 'zh' ? '返回答题' : 'Answer Quiz'}
-            </button>
-          </div>
-
-          {/* 关键点标注 */}
-          {annotations.map((ann) => (
+          {/* 关键点标注 (仅在active状态显示) */}
+          {arState === 'active' && annotations.map((ann) => (
             <ARAnnotation
               key={ann.id}
               label={ann.label}
@@ -208,15 +196,17 @@ export function ARLocationScene({ poiId, narrative, annotations = [], onClose, o
             />
           ))}
 
-          {/* 底部提示 */}
-          <div className="absolute bottom-6 left-4 right-4">
-            <div className="p-4 bg-black/60 backdrop-blur-sm rounded-2xl text-white text-sm text-center">
-              {language === 'zh'
-                ? '点击标注点查看详细信息，或点击返回答题'
-                : 'Tap annotations for details, or return to answer the quiz'}
+          {/* 底部提示 (仅在active状态显示) */}
+          {arState === 'active' && (
+            <div className="fixed bottom-6 left-4 right-4 pointer-events-auto">
+              <div className="p-4 bg-black/60 backdrop-blur-sm rounded-2xl text-white text-sm text-center">
+                {language === 'zh'
+                  ? '点击标注点查看详细信息，或点击返回答题'
+                  : 'Tap annotations for details, or return to answer the quiz'}
+              </div>
             </div>
-          </div>
-        </div>
+          )}
+        </>
       )}
 
       {/* 错误提示 */}
@@ -224,8 +214,12 @@ export function ARLocationScene({ poiId, narrative, annotations = [], onClose, o
         <ARError
           type="camera"
           message={{
-            zh: '相机无法访问。请检查浏览器相机权限设置，或继续使用答题功能。',
-            en: 'Camera unavailable. Please check browser permissions, or continue with the quiz.',
+            zh: hasError 
+              ? '相机无法访问。请检查浏览器相机权限设置，或继续使用答题功能。'
+              : '相机启动超时。请检查权限设置，或继续使用答题功能。',
+            en: hasError 
+              ? 'Camera unavailable. Please check browser permissions, or continue with the quiz.'
+              : 'Camera startup timed out. Please check permissions, or continue with the quiz.',
           }}
           onRetry={handleRetry}
           onFallback={handleFallback}
