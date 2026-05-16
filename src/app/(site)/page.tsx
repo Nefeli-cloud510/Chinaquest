@@ -25,6 +25,9 @@ const homeLabels = {
   webMvp: { zh: '网页版', en: 'Web MVP' },
   stops: { zh: '站', en: 'stops' },
   puzzles: { zh: '谜题', en: 'puzzles' },
+  templeAR: { zh: '天坛 AR', en: 'Temple AR' },
+  templeARDesc: { zh: '扫描透卡，与天坛对话', en: 'Scan card, talk to Temple' },
+  tryAR: { zh: '体验 AR', en: 'Try AR' },
 };
 
 export default function HomePage() {
@@ -81,6 +84,23 @@ export default function HomePage() {
             <div className="mt-4">
               <Button href={`/routes/${route.id}`} size="sm">
                 {homeLabels.viewDetails[language]}
+              </Button>
+            </div>
+          </Card>
+
+          <Card className="relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-20 h-20 bg-gradient-to-br from-red-500/20 to-yellow-500/20 rounded-bl-full"></div>
+            <div className="text-4xl mb-3">🏛️</div>
+            <div className="text-xs font-medium text-[color:var(--cq-muted)]">
+              {homeLabels.templeAR[language]}
+            </div>
+            <div className="mt-2 text-lg font-semibold">{homeLabels.templeARDesc[language]}</div>
+            <div className="mt-1 text-sm text-[color:var(--cq-muted)]">
+              {language === 'zh' ? '使用摄像头扫描天坛透卡' : 'Use camera to scan Temple card'}
+            </div>
+            <div className="mt-4">
+              <Button href="/temple-ar" size="sm" variant="secondary">
+                {homeLabels.tryAR[language]}
               </Button>
             </div>
           </Card>

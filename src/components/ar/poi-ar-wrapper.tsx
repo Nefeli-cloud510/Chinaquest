@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useLanguage } from '@/lib/language';
 import { Card } from '@/components/ui';
-import { ARPOICard, ARMissionIntro, ARLocationScene } from '@/components/ar';
+import { ARPOICard, ARMissionIntro, ARLocationScene, ARFlashcardManager } from '@/components/ar';
 
 type ARView = 'card' | 'intro' | 'scene';
 

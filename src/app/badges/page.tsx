@@ -1,11 +1,11 @@
-"use client";
+'use client';
 
 import { useEffect, useMemo, useState } from "react";
 import { SiteShell } from "@/components/shell";
 import { Button, Card, Pill } from "@/components/ui";
-import { withBasePath } from "@/lib/base-path";
 import { staticContent } from "@/lib/static-content";
 import { useLanguage } from "@/lib/language";
+import { getImagePath } from "@/lib/image-utils";
 
 const BADGE_STORAGE_KEY = "cq_badges_v1";
 const REQUIRED_STOP_BADGES = ["badge_axis_gatekeeper", "badge_axis_timekeeper", "badge_axis_modern_weaver"];
@@ -97,7 +97,7 @@ export default function BadgesPage() {
               {b.image ? (
                 <div className="mt-4 rounded-2xl border border-[color:var(--cq-border)] bg-[color:var(--cq-surface-2)] p-4">
                   <img
-                    src={withBasePath(`/${b.image}`)}
+                    src={getImagePath(b.image)}
                     alt={b.title[language]}
                     className={[
                       "mx-auto h-44 w-44 object-contain",
