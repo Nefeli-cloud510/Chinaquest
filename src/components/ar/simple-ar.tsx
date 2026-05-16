@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { useLanguage } from '@/lib/language';
 import { Card } from '@/components/ui';
 
@@ -20,7 +20,14 @@ interface SimpleARProps {
 type ARState = 'welcome' | 'loading' | 'scanning' | 'detected' | 'error';
 
 /**
- * 混合方案：原生相机 + MindAR 识别
+ * 可靠的 MindAR 图像识别组件
+ * 
+ * 业务逻辑：
+ * 1. 加载 A-Frame 和 MindAR 库
+ * 2. 启动原生相机显示视频
+ * 3. 创建 MindAR 场景（使用 A-Frame 的相机）
+ * 4. MindAR 自动处理图像识别
+ * 5. 识别成功后触发回调
  */
 export function SimpleAR({ onDetected, onClose }: SimpleARProps) {
   const { language } = useLanguage();
@@ -28,31 +35,41 @@ export function SimpleAR({ onDetected, onClose }: SimpleARProps) {
   const [loaded, setLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const sceneRef = useRef<HTMLDivElement>(null);
   const [canDetect, setCanDetect] = useState(false);
   const [matchPercent, setMatchPercent] = useState(0);
-  const [cameraReady, setCameraReady] = useState(false);
+  const [debugInfo, setDebugInfo] = useState('');
+  const mindarInitialized = useRef(false);
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   // 加载 MindAR 库
   useEffect(() => {
     const loadScripts = async () => {
       try {
+        setDebugInfo('正在加载 A-Frame...');
         if (!window.AFRAME) {
           await loadSingleScript('https://unpkg.com/aframe@1.4.2/dist/aframe.min.js');
         }
+        setDebugInfo('A-Frame 加载完成，正在加载 MindAR...');
         if (!window.MINDAR) {
           await loadSingleScript('https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js');
         }
+        setDebugInfo('MindAR 加载完成！');
         setLoaded(true);
       } catch (e) {
         console.error('加载失败:', e);
+        setDebugInfo('加载失败: ' + String(e));
       }
     };
     loadScripts();
     
     return () => {
+      // 清理：停止相机流
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());
+      }
+      // 清理：移除 MindAR 容器
+      if (containerRef.current) {
+        containerRef.current.remove();
       }
     };
   }, []);
@@ -63,137 +80,155 @@ export function SimpleAR({ onDetected, onClose }: SimpleARProps) {
       script.src = src;
       script.async = true;
       script.onload = () => resolve();
-      script.onerror = (err) => reject(err);
+      script.onerror = () => reject(new Error(`Failed to load ${src}`));
       document.body.appendChild(script);
     });
   };
 
-  const startAR = async () => {
+  // 启动原生相机（仅用于显示，不用于识别）
+  const startCamera = useCallback(async () => {
     try {
-      setARState('loading');
-      
-      // 启动原生相机
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment' },
+        video: { 
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
         audio: false,
       });
       streamRef.current = stream;
       
-      // 等待视频元素准备好
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => {
-          videoRef.current?.play();
-          setCameraReady(true);
-        };
+        // 等待视频数据加载
+        await new Promise<void>((resolve) => {
+          if (videoRef.current) {
+            videoRef.current.onloadeddata = () => resolve();
+          }
+        });
+        await videoRef.current.play();
       }
-      
-      // 启动 MindAR
-      initMindARScene();
-      
-      // 延迟切换到扫描状态，确保相机已显示
-      setTimeout(() => {
-        setARState('scanning');
-      }, 800);
-      
+      return true;
     } catch (e) {
       console.error('Camera error:', e);
-      setARState('error');
+      setDebugInfo('相机错误: ' + String(e));
+      return false;
     }
+  }, []);
+
+  // 启动 AR
+  const startAR = async () => {
+    setARState('loading');
+    setDebugInfo('正在启动相机...');
+    
+    // 步骤 1：启动原生相机（用于显示）
+    const cameraStarted = await startCamera();
+    if (!cameraStarted) {
+      setARState('error');
+      return;
+    }
+    
+    setDebugInfo('相机已启动，准备扫描...');
+    
+    // 步骤 2：切换到扫描状态（显示 UI）
+    setTimeout(() => {
+      setARState('scanning');
+      setDebugInfo('扫描中... 请对准透卡');
+      
+      // 步骤 3：初始化 MindAR（在扫描状态后）
+      if (!mindarInitialized.current) {
+        initMindAR();
+      }
+    }, 1000);
   };
 
-  // 所有编译后的目标文件
-  const targetFiles = [
-    '/ar-targets/targets.mind',
-    '/ar-targets/targets (1).mind',
-    '/ar-targets/targets (2).mind',
-    '/ar-targets/targets (3).mind',
-    '/ar-targets/targets (4).mind',
-    '/ar-targets/targets (5).mind',
-    '/ar-targets/targets (6).mind',
-    '/ar-targets/targets (7).mind',
-    '/ar-targets/targets (8).mind',
-    '/ar-targets/targets (9).mind',
-    '/ar-targets/targets (10).mind',
-    '/ar-targets/targets (11).mind',
-    '/ar-targets/targets (12).mind',
-  ];
-
-  const initMindARScene = () => {
-    if (!sceneRef.current) return;
+  // 初始化 MindAR
+  const initMindAR = () => {
+    if (mindarInitialized.current) return;
+    mindarInitialized.current = true;
     
-    // 创建多个场景，每个对应一个 scale
-    let scenesHtml = '';
-    targetFiles.forEach((file, index) => {
-      scenesHtml += `
-        <a-scene
-          mindar-image="
-            imageTargetSrc: ${file};
-            maxTrack: 1;
-            filterMinCF: 0.001;
-            filterBeta: 1e-30;
-            uiScanning: no;
-          "
-          vr-mode-ui="enabled: false"
-          renderer="colorManagement: true, physicallyCorrectLights: true;"
-          id="ar-scene-${index}"
-          style="display: none;"
-        >
-          <a-entity
-            mindar-image-target="targetIndex: 0"
-            id="target-${index}"
-          >
-            <a-plane
-              color="#dc2626"
-              position="0 0 0"
-              height="1.5"
-              width="1.5"
-              rotation="-90 0 0"
-              material="opacity: 0.7"
-            ></a-plane>
-            <a-text
-              value="${language === 'zh' ? '你好，天坛！' : 'Hello, Temple!'}"
-              position="0 0.8 0"
-              rotation="-90 0 0"
-              color="#ffffff"
-              font="mozillavr"
-              font-size="60"
-              width="4"
-              align="center"
-            ></a-text>
-          </a-entity>
-          
-          <a-camera active="true"></a-camera>
-        </a-scene>
-      `;
+    setDebugInfo('正在初始化 MindAR...');
+    
+    // 创建 MindAR 场景容器
+    // 注意：MindAR 会自己启动相机，所以我们不需要传递视频流
+    const container = document.createElement('div');
+    container.id = 'mindar-container';
+    container.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;z-index:40;pointer-events:none;opacity:0;';
+    document.body.appendChild(container);
+    containerRef.current = container;
+    
+    // 创建 MindAR 场景
+    // 使用 embedded 模式，让 MindAR 自己管理相机
+    const scene = document.createElement('a-scene');
+    scene.setAttribute('mindar-image', `
+      imageTargetSrc: /ar-targets/targets.mind;
+      maxTrack: 1;
+      filterMinCF: 0.001;
+      filterBeta: 1e-30;
+      uiScanning: no;
+    `);
+    scene.setAttribute('vr-mode-ui', 'enabled: false');
+    scene.setAttribute('renderer', 'colorManagement: true, physicallyCorrectLights: true');
+    scene.setAttribute('embedded', '');
+    scene.style.cssText = 'width:100%;height:100%;';
+    
+    // 创建目标实体
+    const targetEntity = document.createElement('a-entity');
+    targetEntity.setAttribute('mindar-image-target', 'targetIndex: 0');
+    
+    // 添加可视化元素（识别成功后显示）
+    const plane = document.createElement('a-plane');
+    plane.setAttribute('color', '#dc2626');
+    plane.setAttribute('position', '0 0 0');
+    plane.setAttribute('height', '1.5');
+    plane.setAttribute('width', '1.5');
+    plane.setAttribute('rotation', '-90 0 0');
+    plane.setAttribute('material', 'opacity: 0.7');
+    
+    const text = document.createElement('a-text');
+    text.setAttribute('value', language === 'zh' ? '你好，天坛！' : 'Hello, Temple!');
+    text.setAttribute('position', '0 0.8 0');
+    text.setAttribute('rotation', '-90 0 0');
+    text.setAttribute('color', '#ffffff');
+    text.setAttribute('align', 'center');
+    
+    targetEntity.appendChild(plane);
+    targetEntity.appendChild(text);
+    
+    // 添加相机
+    const camera = document.createElement('a-camera');
+    camera.setAttribute('active', 'true');
+    camera.setAttribute('position', '0 0 0');
+    
+    scene.appendChild(targetEntity);
+    scene.appendChild(camera);
+    container.appendChild(scene);
+    
+    // 监听识别事件
+    scene.addEventListener('loaded', () => {
+      setDebugInfo('MindAR 场景加载完成，正在监听...');
     });
     
-    sceneRef.current.innerHTML = scenesHtml;
+    // 识别成功
+    scene.addEventListener('targetFound', () => {
+      console.log('✅ MindAR 识别成功！');
+      setDebugInfo('识别成功！');
+      setCanDetect(true);
+      setMatchPercent(80);
+      setARState('detected');
+      onDetected?.();
+    });
     
-    // 监听所有场景的识别事件
-    setTimeout(() => {
-      targetFiles.forEach((_, index) => {
-        const sceneEl = document.querySelector(`#ar-scene-${index}`);
-        if (sceneEl) {
-          sceneEl.addEventListener('targetFound', () => {
-            console.log(`✅ MindAR 识别成功！ (scale ${index})`);
-            setCanDetect(true);
-            setMatchPercent(80);
-            setARState('detected');
-            onDetected?.();
-          });
-          
-          sceneEl.addEventListener('targetLost', () => {
-            console.log(`❌ 目标丢失 (scale ${index})`);
-            setCanDetect(false);
-            setMatchPercent(0);
-            setARState('scanning');
-          });
-        }
-      });
-    }, 2000);
+    // 目标丢失
+    scene.addEventListener('targetLost', () => {
+      console.log('❌ 目标丢失');
+      setDebugInfo('目标丢失');
+      setCanDetect(false);
+      setMatchPercent(0);
+    });
   };
 
+  // 手动触发识别（用于测试）
   const tryDetect = () => {
     if (canDetect) {
       setARState('detected');
@@ -201,6 +236,7 @@ export function SimpleAR({ onDetected, onClose }: SimpleARProps) {
     }
   };
 
+  // 跳过识别
   const skipToExperience = () => {
     setARState('detected');
     onDetected?.();
@@ -244,6 +280,12 @@ export function SimpleAR({ onDetected, onClose }: SimpleARProps) {
             </button>
           </div>
           
+          {debugInfo && (
+            <div className="mt-4 text-xs text-gray-400">
+              调试: {debugInfo}
+            </div>
+          )}
+          
           <button
             onClick={onClose}
             className="mt-6 text-sm text-gray-500 hover:text-gray-700"
@@ -274,6 +316,9 @@ export function SimpleAR({ onDetected, onClose }: SimpleARProps) {
             <p className="text-white text-sm">
               {language === 'zh' ? '正在启动相机...' : 'Starting camera...'}
             </p>
+            {debugInfo && (
+              <p className="text-white/60 text-xs mt-2">{debugInfo}</p>
+            )}
           </div>
         </div>
         
@@ -301,6 +346,9 @@ export function SimpleAR({ onDetected, onClose }: SimpleARProps) {
               ? '请检查相机权限设置' 
               : 'Please check camera permissions'}
           </p>
+          {debugInfo && (
+            <p className="text-xs text-gray-400 mb-4">{debugInfo}</p>
+          )}
           <button
             onClick={skipToExperience}
             className="px-6 py-2 bg-red-600 text-white rounded-full font-semibold hover:bg-red-700"
@@ -315,7 +363,7 @@ export function SimpleAR({ onDetected, onClose }: SimpleARProps) {
   // 扫描或检测到
   return (
     <div className="fixed inset-0 z-50 bg-black">
-      {/* 原生相机视频 */}
+      {/* 原生相机视频（仅用于显示） */}
       <video
         ref={videoRef}
         autoPlay
@@ -324,17 +372,14 @@ export function SimpleAR({ onDetected, onClose }: SimpleARProps) {
         className="w-full h-full object-cover"
       />
       
-      {/* MindAR 隐藏场景 */}
-      <div ref={sceneRef} className="hidden" />
-      
       {/* UI 覆盖层 */}
       {arState === 'scanning' && (
         <div className="absolute inset-0 pointer-events-none">
-          {/* 顶部提示 + 匹配度 */}
+          {/* 顶部提示 + 匹配度 + 调试信息 */}
           <div className="absolute top-16 left-0 right-0 text-center space-y-2">
             <div className="inline-block px-6 py-3 bg-black/70 backdrop-blur-sm rounded-2xl text-white">
               <p className="text-sm font-medium">
-                {language === 'zh' ? '把透卡完全放进框里' : 'Put card fully inside box'}
+                {language === 'zh' ? '把透卡对准摄像头' : 'Point card to camera'}
               </p>
             </div>
             
@@ -354,6 +399,12 @@ export function SimpleAR({ onDetected, onClose }: SimpleARProps) {
                 </span>
               </div>
             </div>
+            
+            {debugInfo && (
+              <div className="inline-block px-3 py-1 bg-black/40 rounded text-white/60 text-xs">
+                {debugInfo}
+              </div>
+            )}
           </div>
           
           {/* 扫描框 - 更大，几乎全屏 */}
