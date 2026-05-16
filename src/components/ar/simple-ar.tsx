@@ -4,6 +4,14 @@ import { useState, useEffect, useRef } from 'react';
 import { useLanguage } from '@/lib/language';
 import { Card } from '@/components/ui';
 
+// 扩展 Window 类型
+declare global {
+  interface Window {
+    AFRAME?: any;
+    MINDAR?: any;
+  }
+}
+
 interface SimpleARProps {
   onDetected?: () => void;
   onClose: () => void;
@@ -32,7 +40,7 @@ export function SimpleAR({ onDetected, onClose }: SimpleARProps) {
         if (!window.AFRAME) {
           await loadSingleScript('https://unpkg.com/aframe@1.4.2/dist/aframe.min.js');
         }
-        if (!(window as any).MINDAR) {
+        if (!window.MINDAR) {
           await loadSingleScript('https://cdn.jsdelivr.net/npm/mind-ar@1.2.2/dist/mindar-image-aframe.prod.js');
         }
         setLoaded(true);
