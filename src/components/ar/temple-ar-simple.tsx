@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/lib/language';
 import { Card } from '@/components/ui';
 
@@ -21,8 +21,8 @@ const labels = {
   close: { zh: '关闭', en: 'Close' },
   loading: { zh: '正在打开 AR 页面...', en: 'Opening AR scene...' },
   scanning: {
-    zh: '请将天坛识别图放入画面中央并保持稳定，识别成功后会显示红色方块与天坛模型。',
-    en: 'Center the Temple marker and keep it stable. The red box and Temple model will appear after detection.',
+    zh: '全屏区域都可参与识别。请将天坛识别图放入画面内并保持稳定，识别成功后会显示天坛模型。',
+    en: 'The whole screen can recognize the marker. Keep the Temple marker inside the camera view to show the model.',
   },
   detected: { zh: '已识别到天坛识别图', en: 'Temple marker detected' },
   lost: { zh: '标记已离开画面', en: 'Marker lost from view' },
@@ -31,8 +31,8 @@ const labels = {
     en: 'AR scene loaded. Waiting for the camera and the Temple marker.',
   },
   modelLoaded: {
-    zh: '天坛模型已加载；识别成功后会显示红色方块与模型。',
-    en: 'Temple model loaded. The red box and model will appear after recognition.',
+    zh: '天坛模型已加载；识别成功后会显示模型，并可点击开始对话。',
+    en: 'Temple model loaded. The model will appear after recognition, and you can tap to start the dialogue.',
   },
   loadFailed: { zh: 'AR 页面加载失败，请刷新重试。', en: 'AR page failed to load. Please refresh and retry.' },
   cameraHint: {
@@ -47,29 +47,28 @@ const labels = {
   },
 };
 
-function resolveRuntimeBasePath() {
-  if (typeof window === 'undefined') {
-    return process.env.NEXT_PUBLIC_BASE_PATH || '';
-  }
-
-  const pathname = window.location.pathname;
-  const marker = '/temple-ar';
-  const markerIndex = pathname.indexOf(marker);
-
-  if (markerIndex > 0) {
-    return pathname.slice(0, markerIndex);
-  }
-
-  return process.env.NEXT_PUBLIC_BASE_PATH || '';
-}
-
 export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
   const { language } = useLanguage();
-  const basePath = useMemo(() => resolveRuntimeBasePath(), []);
   const [arState, setARState] = useState<ARState>('welcome');
   const [debugInfo, setDebugInfo] = useState(labels.cameraHint.zh);
   const iframeRef = useRef<HTMLIFrameElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
   const hasTriggeredDetectedRef = useRef(false);
+
+  const requestFullscreenIfPossible = async () => {
+    const element = containerRef.current;
+    if (!element || document.fullscreenElement) {
+      return;
+    }
+
+    try {
+      if (element.requestFullscreen) {
+        await element.requestFullscreen();
+      }
+    } catch {
+      // Ignore fullscreen failures on browsers that block it.
+    }
+  };
 
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
@@ -119,11 +118,23 @@ export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
 
   const startAR = async () => {
     hasTriggeredDetectedRef.current = false;
+    await requestFullscreenIfPossible();
     setARState('scanning');
     setDebugInfo(labels.cameraHint[language]);
   };
 
-  const iframeSrc = `${basePath}/ar/hiro-temple.html?lang=${language}`;
+  const handleClose = async () => {
+    if (document.fullscreenElement) {
+      try {
+        await document.exitFullscreen();
+      } catch {
+        // Ignore exit failures.
+      }
+    }
+    onClose();
+  };
+
+  const iframeSrc = `../ar/hiro-temple.html?lang=${language}`;
 
   if (arState === 'loading' || arState === 'welcome' || arState === 'error') {
     return (
@@ -148,7 +159,7 @@ export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
             </button>
 
             <button
-              onClick={onClose}
+              onClick={handleClose}
               className="px-6 py-3 bg-gray-200 text-gray-800 rounded-full font-semibold hover:bg-gray-300"
             >
               {labels.close[language]}
@@ -164,7 +175,7 @@ export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-black">
+    <div ref={containerRef} className="fixed inset-0 z-50 bg-black">
       <iframe
         ref={iframeRef}
         title="ChinaQuest Temple AR"
@@ -187,13 +198,15 @@ export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
       </div>
 
       <div className="pointer-events-none absolute inset-0 z-[55] flex items-center justify-center">
-        <div className="h-[52vmin] w-[52vmin] max-h-[420px] max-w-[420px] rounded-3xl border-4 border-white/60">
-          <div className="h-full w-full border-[3px] border-red-500/70 rounded-[20px]" />
+        <div className="absolute inset-3 rounded-[32px] border-2 border-white/35" />
+        <div className="absolute inset-6 rounded-[28px] border border-white/15" />
+        <div className="absolute left-6 top-6 rounded-full bg-black/45 px-3 py-1 text-xs font-medium text-white/80">
+          {language === 'zh' ? '全屏可识别' : 'Full-screen detection'}
         </div>
       </div>
 
       <button
-        onClick={onClose}
+        onClick={handleClose}
         className="absolute right-4 top-4 z-[70] flex h-12 w-12 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm hover:bg-white/30"
       >
         ✕

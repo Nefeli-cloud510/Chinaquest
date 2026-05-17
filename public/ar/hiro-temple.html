@@ -84,7 +84,7 @@
 
       .scale-controls {
         position: fixed;
-        right: 12px;
+        left: 12px;
         bottom: 12px;
         z-index: 10001;
         display: flex;
@@ -101,6 +101,65 @@
         font: 600 18px/1 Arial, sans-serif;
         cursor: pointer;
       }
+
+      .narrative-anchor {
+        position: fixed;
+        top: 0;
+        left: 0;
+        z-index: 10002;
+        display: none;
+        max-width: min(280px, calc(100vw - 32px));
+        transform: translate(-50%, -102%);
+        pointer-events: auto;
+      }
+
+      .narrative-anchor.visible {
+        display: block;
+      }
+
+      .narrative-prompt,
+      .narrative-bubble {
+        border-radius: 18px;
+        background: rgba(17, 24, 39, 0.9);
+        color: #fff;
+        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+      }
+
+      .narrative-prompt {
+        display: none;
+        padding: 10px 14px;
+        border: 1px solid rgba(255, 255, 255, 0.14);
+        font: 600 13px/1.4 Arial, sans-serif;
+      }
+
+      .narrative-bubble {
+        display: none;
+        padding: 14px 16px;
+        border: 1px solid rgba(245, 158, 11, 0.28);
+      }
+
+      .narrative-prompt.visible,
+      .narrative-bubble.visible {
+        display: block;
+      }
+
+      .narrative-title {
+        font: 600 13px/1.2 Arial, sans-serif;
+        color: #fbbf24;
+      }
+
+      .narrative-text {
+        margin-top: 8px;
+        font: 13px/1.55 Arial, sans-serif;
+      }
+
+      .narrative-tip {
+        margin-top: 10px;
+        font: 12px/1.4 Arial, sans-serif;
+        color: rgba(255, 255, 255, 0.68);
+      }
     </style>
   </head>
   <body>
@@ -110,6 +169,16 @@
       <button id="scale-down" type="button" aria-label="Scale down">-</button>
       <button id="scale-reset" type="button" aria-label="Reset scale">1:1</button>
       <button id="scale-up" type="button" aria-label="Scale up">+</button>
+    </div>
+    <div id="narrative-anchor" class="narrative-anchor" aria-live="polite">
+      <button id="narrative-prompt" class="narrative-prompt" type="button">
+        Tap the Temple to start the story.
+      </button>
+      <button id="narrative-bubble" class="narrative-bubble" type="button">
+        <div class="narrative-title" id="narrative-title">Temple of Heaven</div>
+        <div class="narrative-text" id="narrative-text"></div>
+        <div class="narrative-tip" id="narrative-tip">Tap again for the next line.</div>
+      </button>
     </div>
     <a-scene
       embedded
@@ -143,7 +212,7 @@
             gltf-model="#temple-model"
             position="0 0 0"
             rotation="-90 180 180"
-            scale="0.00072 0.00072 0.00072"
+            scale="0.00032 0.00032 0.00032"
           ></a-entity>
         </a-entity>
       </a-marker>
@@ -168,8 +237,33 @@
         const scaleDownButton = document.getElementById('scale-down');
         const scaleResetButton = document.getElementById('scale-reset');
         const scaleUpButton = document.getElementById('scale-up');
-        const DEFAULT_SCALE = 0.00072;
+        const narrativeAnchor = document.getElementById('narrative-anchor');
+        const narrativePrompt = document.getElementById('narrative-prompt');
+        const narrativeBubble = document.getElementById('narrative-bubble');
+        const narrativeTitle = document.getElementById('narrative-title');
+        const narrativeText = document.getElementById('narrative-text');
+        const narrativeTip = document.getElementById('narrative-tip');
+        const DEFAULT_SCALE = 0.00032;
+        const MODEL_HEIGHT = 1812.66619873;
+        const HIDDEN_MESHES = new Set(['Di_mian04']);
+        const narrativeLines = {
+          zh: [
+            '我是天坛，明清两代皇帝曾在这里祭天祈谷。',
+            '你眼前的主体建筑名为祈年殿，象征着对风调雨顺与五谷丰登的祈愿。',
+            '请沿着我的轮廓慢慢移动视角，你会更清楚地看到屋顶层层叠起的结构。',
+            '继续探索吧，后续我们还能在这里接入更多故事、任务与互动内容。',
+          ],
+          en: [
+            'I am the Temple of Heaven, where emperors once prayed for good harvests.',
+            'The main structure before you is the Hall of Prayer for Good Harvests.',
+            'Move around slowly and you will see the layered roof structure more clearly.',
+            'Keep exploring. More stories, missions, and interactions can be added here next.',
+          ],
+        };
         let currentScale = DEFAULT_SCALE;
+        let currentLanguage = 'en';
+        let narrativeIndex = -1;
+        let markerVisible = false;
 
         function emit(type, detail) {
           if (window.parent && window.parent !== window) {
@@ -190,6 +284,53 @@
           if (status) {
             status.textContent = message;
           }
+        }
+
+        function getLang() {
+          const queryLang = new URLSearchParams(window.location.search).get('lang');
+          return queryLang === 'zh' ? 'zh' : 'en';
+        }
+
+        function setNarrativeVisibility(showPrompt, showBubble) {
+          if (!narrativeAnchor || !narrativePrompt || !narrativeBubble) {
+            return;
+          }
+
+          const shouldShowAnchor = showPrompt || showBubble;
+          narrativeAnchor.classList.toggle('visible', shouldShowAnchor);
+          narrativePrompt.classList.toggle('visible', showPrompt);
+          narrativeBubble.classList.toggle('visible', showBubble);
+        }
+
+        function resetNarrative() {
+          narrativeIndex = -1;
+          setNarrativeVisibility(markerVisible, false);
+        }
+
+        function advanceNarrative() {
+          if (!markerVisible) {
+            return;
+          }
+
+          const lines = narrativeLines[currentLanguage];
+          narrativeIndex = Math.min(narrativeIndex + 1, lines.length - 1);
+          if (narrativeTitle) {
+            narrativeTitle.textContent = currentLanguage === 'zh' ? '天坛' : 'Temple of Heaven';
+          }
+          if (narrativeText) {
+            narrativeText.textContent = lines[narrativeIndex];
+          }
+          if (narrativeTip) {
+            narrativeTip.textContent =
+              narrativeIndex >= lines.length - 1
+                ? currentLanguage === 'zh'
+                  ? '已到最后一句，继续点击可重复查看。'
+                  : 'This is the final line. Tap again to replay.'
+                : currentLanguage === 'zh'
+                  ? '继续点击，聆听下一句。'
+                  : 'Tap again for the next line.';
+          }
+          setNarrativeVisibility(false, true);
         }
 
         function updateViewportVariables() {
@@ -276,8 +417,9 @@
         }
 
         function applyScale(scale) {
-          currentScale = Math.max(0.00035, Math.min(0.0018, scale));
+          currentScale = Math.max(0.0002, Math.min(0.0018, scale));
           model.setAttribute('scale', `${currentScale} ${currentScale} ${currentScale}`);
+          model.setAttribute('position', '0 0 0');
         }
 
         function hideUnwantedMeshes(root) {
@@ -286,27 +428,46 @@
               return;
             }
 
-            if (obj.name === 'Di_mian04') {
+            if (HIDDEN_MESHES.has(obj.name)) {
               obj.visible = false;
             }
           });
         }
 
-        function recenterModel(root) {
-          const three = AFRAME.THREE;
-          const box = new three.Box3().setFromObject(root);
-          if (box.isEmpty()) {
+        function updateNarrativeAnchorPosition() {
+          if (!markerVisible || !narrativeAnchor || !scene.camera) {
+            if (narrativeAnchor) {
+              narrativeAnchor.classList.remove('visible');
+            }
             return;
           }
 
-          const center = new three.Vector3();
-          box.getCenter(center);
-          root.position.x -= center.x;
-          root.position.z -= center.z;
-          root.position.y -= box.min.y;
+          const viewport = window.visualViewport;
+          const viewportWidth = viewport ? viewport.width : window.innerWidth;
+          const viewportHeight = viewport ? viewport.height : window.innerHeight;
+          const three = AFRAME.THREE;
+          const worldPos = new three.Vector3();
+          modelWrapper.object3D.getWorldPosition(worldPos);
+          worldPos.y += MODEL_HEIGHT * currentScale + 0.02;
+          worldPos.project(scene.camera);
+
+          const x = (worldPos.x * 0.5 + 0.5) * viewportWidth;
+          const y = (-worldPos.y * 0.5 + 0.5) * viewportHeight;
+          narrativeAnchor.style.left = `${x}px`;
+          narrativeAnchor.style.top = `${y}px`;
+        }
+
+        function animationTick() {
+          updateNarrativeAnchorPosition();
+          window.requestAnimationFrame(animationTick);
         }
 
         scene.addEventListener('loaded', function () {
+          currentLanguage = getLang();
+          if (narrativePrompt) {
+            narrativePrompt.textContent =
+              currentLanguage === 'zh' ? '点击天坛，开始对话。' : 'Tap the Temple to start the story.';
+          }
           hideLoader();
           const videoReady = ensureLayersVisible();
           setStatus(
@@ -330,7 +491,13 @@
         });
 
         marker.addEventListener('markerFound', function () {
-          setStatus('Temple marker detected. The Temple model is anchored to the marker.');
+          markerVisible = true;
+          resetNarrative();
+          setStatus(
+            currentLanguage === 'zh'
+              ? '已识别到天坛标记。模型已贴合 marker，点击天坛气泡可开始对话。'
+              : 'Temple marker detected. Tap the model to start the dialogue.'
+          );
           if (modelWrapper) {
             modelWrapper.setAttribute('visible', 'true');
           }
@@ -338,6 +505,8 @@
         });
 
         marker.addEventListener('markerLost', function () {
+          markerVisible = false;
+          setNarrativeVisibility(false, false);
           setStatus('Marker lost. Move the Temple marker back into view.');
           if (modelWrapper) {
             modelWrapper.setAttribute('visible', 'false');
@@ -349,14 +518,17 @@
           const meshRoot = model.getObject3D('mesh');
           if (meshRoot) {
             hideUnwantedMeshes(meshRoot);
-            recenterModel(meshRoot);
           }
 
           applyScale(DEFAULT_SCALE);
           if (modelWrapper) {
             modelWrapper.setAttribute('visible', 'false');
           }
-          setStatus('Temple model loaded. You can use the bottom-right buttons to resize it.');
+          setStatus(
+            currentLanguage === 'zh'
+              ? '天坛模型已加载。当前使用底部中心轴心，position 为 0 0 0，并恢复白玉栅栏底座。'
+              : 'Temple model loaded. After recognition, tap the model to start the dialogue and use the left controls to scale it.'
+          );
           emit('model-loaded');
         });
 
@@ -392,7 +564,23 @@
           });
         }
 
+        if (narrativePrompt) {
+          narrativePrompt.addEventListener('click', function () {
+            advanceNarrative();
+          });
+        }
+
+        if (narrativeBubble) {
+          narrativeBubble.addEventListener('click', function () {
+            if (narrativeIndex >= narrativeLines[currentLanguage].length - 1) {
+              narrativeIndex = -1;
+            }
+            advanceNarrative();
+          });
+        }
+
         updateViewportVariables();
+        window.requestAnimationFrame(animationTick);
         window.setInterval(ensureLayersVisible, 1000);
         window.addEventListener('resize', ensureLayersVisible);
         if (window.visualViewport) {
