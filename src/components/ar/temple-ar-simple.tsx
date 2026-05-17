@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLanguage } from '@/lib/language';
 import { Card } from '@/components/ui';
 
@@ -47,8 +47,25 @@ const labels = {
   },
 };
 
+function resolveRuntimeBasePath() {
+  if (typeof window === 'undefined') {
+    return process.env.NEXT_PUBLIC_BASE_PATH || '';
+  }
+
+  const pathname = window.location.pathname;
+  const marker = '/temple-ar';
+  const markerIndex = pathname.indexOf(marker);
+
+  if (markerIndex > 0) {
+    return pathname.slice(0, markerIndex);
+  }
+
+  return process.env.NEXT_PUBLIC_BASE_PATH || '';
+}
+
 export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
   const { language } = useLanguage();
+  const basePath = useMemo(() => resolveRuntimeBasePath(), []);
   const [arState, setARState] = useState<ARState>('welcome');
   const [debugInfo, setDebugInfo] = useState(labels.cameraHint.zh);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -106,7 +123,7 @@ export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
     setDebugInfo(labels.cameraHint[language]);
   };
 
-  const iframeSrc = `/ar/hiro-temple.html?lang=${language}`;
+  const iframeSrc = `${basePath}/ar/hiro-temple.html?lang=${language}`;
 
   if (arState === 'loading' || arState === 'welcome' || arState === 'error') {
     return (

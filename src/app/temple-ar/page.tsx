@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useLanguage } from '@/lib/language';
 import { SiteShell } from '@/components/shell';
 import { Card } from '@/components/ui';
@@ -51,8 +51,25 @@ const pageLabels = {
   },
 };
 
+function resolveRuntimeBasePath() {
+  if (typeof window === 'undefined') {
+    return process.env.NEXT_PUBLIC_BASE_PATH || '';
+  }
+
+  const pathname = window.location.pathname;
+  const marker = '/temple-ar';
+  const markerIndex = pathname.indexOf(marker);
+
+  if (markerIndex > 0) {
+    return pathname.slice(0, markerIndex);
+  }
+
+  return process.env.NEXT_PUBLIC_BASE_PATH || '';
+}
+
 export default function TempleOfHeavenPage() {
   const { language } = useLanguage();
+  const basePath = useMemo(() => resolveRuntimeBasePath(), []);
   const [showAR, setShowAR] = useState(false);
   const [hasDetected, setHasDetected] = useState(false);
 
@@ -95,7 +112,7 @@ export default function TempleOfHeavenPage() {
                   {pageLabels.startAR[language]}
                 </button>
                 <a
-                  href="/ar/patterns/pattern-temple_of_heaven_hiro.png"
+                  href={`${basePath}/ar/patterns/pattern-temple_of_heaven_hiro.png`}
                   target="_blank"
                   rel="noreferrer"
                   className="rounded-full border border-gray-300 px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-50"
@@ -110,7 +127,7 @@ export default function TempleOfHeavenPage() {
               <p className="mt-2 text-sm leading-6 text-gray-600">{pageLabels.markerHint[language]}</p>
               <div className="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white p-3">
                 <img
-                  src="/ar/patterns/pattern-temple_of_heaven_hiro.png"
+                  src={`${basePath}/ar/patterns/pattern-temple_of_heaven_hiro.png`}
                   alt="Temple marker preview"
                   className="mx-auto block w-full max-w-[320px] rounded-xl object-contain"
                 />

@@ -2,9 +2,10 @@ import type { NextConfig } from "next";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const repoName = "Chinaquest";
 const rootDir = dirname(fileURLToPath(import.meta.url));
-const basePath = process.env.NEXT_PUBLIC_BASE_PATH || "";
+const repoName = process.env.GITHUB_REPOSITORY?.split("/")[1] || "Chinaquest";
+const resolvedBasePath =
+  process.env.NEXT_PUBLIC_BASE_PATH || (process.env.GITHUB_ACTIONS ? `/${repoName}` : "");
 
 const nextConfig: NextConfig = {
   output: "export",
@@ -12,13 +13,16 @@ const nextConfig: NextConfig = {
   images: { 
     unoptimized: true,
   },
+  env: {
+    NEXT_PUBLIC_BASE_PATH: resolvedBasePath,
+  },
   turbopack: { root: rootDir },
   compress: true,
   poweredByHeader: false,
-  ...(basePath
+  ...(resolvedBasePath
     ? {
-        basePath,
-        assetPrefix: `${basePath}/`,
+        basePath: resolvedBasePath,
+        assetPrefix: `${resolvedBasePath}/`,
       }
     : {}),
 };
