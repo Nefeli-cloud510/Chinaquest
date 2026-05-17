@@ -13,9 +13,9 @@
       html,
       body {
         margin: 0;
-        width: 100%;
-        height: 100%;
-        min-height: 100dvh;
+        width: var(--cq-vw, 100vw);
+        height: var(--cq-vh, 100vh);
+        min-height: var(--cq-vh, 100dvh);
         overflow: hidden;
         background: #000;
       }
@@ -25,10 +25,10 @@
       a-scene {
         position: fixed !important;
         inset: 0 !important;
-        width: 100vw !important;
-        height: 100vh !important;
-        min-width: 100dvw !important;
-        min-height: 100dvh !important;
+        width: var(--cq-vw, 100vw) !important;
+        height: var(--cq-vh, 100vh) !important;
+        min-width: var(--cq-vw, 100dvw) !important;
+        min-height: var(--cq-vh, 100dvh) !important;
       }
 
       video {
@@ -81,11 +81,36 @@
         color: #fff;
         font: 13px/1.4 Arial, sans-serif;
       }
+
+      .scale-controls {
+        position: fixed;
+        right: 12px;
+        bottom: 12px;
+        z-index: 10001;
+        display: flex;
+        gap: 8px;
+      }
+
+      .scale-controls button {
+        width: 44px;
+        height: 44px;
+        border: 0;
+        border-radius: 999px;
+        background: rgba(0, 0, 0, 0.62);
+        color: #fff;
+        font: 600 18px/1 Arial, sans-serif;
+        cursor: pointer;
+      }
     </style>
   </head>
   <body>
     <div class="arjs-loader" id="loader">Loading AR scene...</div>
     <div class="status" id="status">Initializing AR...</div>
+    <div class="scale-controls" aria-label="Model scale controls">
+      <button id="scale-down" type="button" aria-label="Scale down">-</button>
+      <button id="scale-reset" type="button" aria-label="Reset scale">1:1</button>
+      <button id="scale-up" type="button" aria-label="Scale up">+</button>
+    </div>
     <a-scene
       embedded
       vr-mode-ui="enabled: false"
@@ -107,28 +132,18 @@
         smoothTolerance="0.01"
         smoothThreshold="5"
       >
-        <a-box
-          id="debug-box"
-          color="#c62828"
-          depth="0.5"
-          height="0.5"
-          width="0.5"
-          position="0 0.5 0"
-          material="opacity: 0.72"
-          animation="property: rotation; to: 0 360 0; loop: true; dur: 4000; easing: linear;"
-        ></a-box>
         <a-entity
           id="temple-wrapper"
-          position="0 0.02 0"
+          position="0 0 0"
           rotation="0 0 0"
           visible="false"
         >
           <a-entity
             id="temple-entity"
             gltf-model="#temple-model"
-            position="0.18 0 0"
+            position="0 0 0"
             rotation="-90 180 180"
-            scale="0.00045 0.00045 0.00045"
+            scale="0.00072 0.00072 0.00072"
           ></a-entity>
         </a-entity>
       </a-marker>
@@ -150,7 +165,11 @@
         const marker = document.getElementById('hiro-marker');
         const model = document.getElementById('temple-entity');
         const modelWrapper = document.getElementById('temple-wrapper');
-        const debugBox = document.getElementById('debug-box');
+        const scaleDownButton = document.getElementById('scale-down');
+        const scaleResetButton = document.getElementById('scale-reset');
+        const scaleUpButton = document.getElementById('scale-up');
+        const DEFAULT_SCALE = 0.00072;
+        let currentScale = DEFAULT_SCALE;
 
         function emit(type, detail) {
           if (window.parent && window.parent !== window) {
@@ -171,6 +190,18 @@
           if (status) {
             status.textContent = message;
           }
+        }
+
+        function updateViewportVariables() {
+          const viewport = window.visualViewport;
+          const viewportWidth = viewport ? viewport.width : window.innerWidth;
+          const viewportHeight = viewport ? viewport.height : window.innerHeight;
+          document.documentElement.style.setProperty('--cq-vw', viewportWidth + 'px');
+          document.documentElement.style.setProperty('--cq-vh', viewportHeight + 'px');
+          document.body.style.width = viewportWidth + 'px';
+          document.body.style.height = viewportHeight + 'px';
+          scene.style.width = viewportWidth + 'px';
+          scene.style.height = viewportHeight + 'px';
         }
 
         function forceFullscreenStyle(element, zIndex) {
@@ -200,7 +231,7 @@
           const mediaHeight = sourceHeight || 720;
           const viewportRatio = viewportWidth / viewportHeight;
           const mediaRatio = mediaWidth / mediaHeight;
-          const overscan = 8;
+          const overscan = 48;
 
           let renderWidth = viewportWidth;
           let renderHeight = viewportHeight;
@@ -219,6 +250,7 @@
         }
 
         function ensureLayersVisible() {
+          updateViewportVariables();
           const video = document.querySelector('video');
           const canvas = document.querySelector('.a-canvas');
           if (!video) {
@@ -241,6 +273,37 @@
           scene.style.inset = '0';
           scene.style.zIndex = '2';
           return true;
+        }
+
+        function applyScale(scale) {
+          currentScale = Math.max(0.00035, Math.min(0.0018, scale));
+          model.setAttribute('scale', `${currentScale} ${currentScale} ${currentScale}`);
+        }
+
+        function hideUnwantedMeshes(root) {
+          root.traverse(function (obj) {
+            if (!obj.isMesh) {
+              return;
+            }
+
+            if (obj.name === 'Di_mian04') {
+              obj.visible = false;
+            }
+          });
+        }
+
+        function recenterModel(root) {
+          const three = AFRAME.THREE;
+          const box = new three.Box3().setFromObject(root);
+          if (box.isEmpty()) {
+            return;
+          }
+
+          const center = new three.Vector3();
+          box.getCenter(center);
+          root.position.x -= center.x;
+          root.position.z -= center.z;
+          root.position.y -= box.min.y;
         }
 
         scene.addEventListener('loaded', function () {
@@ -267,10 +330,7 @@
         });
 
         marker.addEventListener('markerFound', function () {
-          setStatus('Temple marker detected. Red box should stay visible as anchor reference.');
-          if (debugBox) {
-            debugBox.setAttribute('visible', 'true');
-          }
+          setStatus('Temple marker detected. The Temple model is anchored to the marker.');
           if (modelWrapper) {
             modelWrapper.setAttribute('visible', 'true');
           }
@@ -279,9 +339,6 @@
 
         marker.addEventListener('markerLost', function () {
           setStatus('Marker lost. Move the Temple marker back into view.');
-          if (debugBox) {
-            debugBox.setAttribute('visible', 'true');
-          }
           if (modelWrapper) {
             modelWrapper.setAttribute('visible', 'false');
           }
@@ -289,10 +346,17 @@
         });
 
         model.addEventListener('model-loaded', function () {
+          const meshRoot = model.getObject3D('mesh');
+          if (meshRoot) {
+            hideUnwantedMeshes(meshRoot);
+            recenterModel(meshRoot);
+          }
+
+          applyScale(DEFAULT_SCALE);
           if (modelWrapper) {
             modelWrapper.setAttribute('visible', 'false');
           }
-          setStatus('Temple model loaded. Custom marker tracking is ready.');
+          setStatus('Temple model loaded. You can use the bottom-right buttons to resize it.');
           emit('model-loaded');
         });
 
@@ -310,6 +374,25 @@
           ensureLayersVisible();
         }).observe(document.body, { childList: true, subtree: true });
 
+        if (scaleDownButton) {
+          scaleDownButton.addEventListener('click', function () {
+            applyScale(currentScale * 0.85);
+          });
+        }
+
+        if (scaleResetButton) {
+          scaleResetButton.addEventListener('click', function () {
+            applyScale(DEFAULT_SCALE);
+          });
+        }
+
+        if (scaleUpButton) {
+          scaleUpButton.addEventListener('click', function () {
+            applyScale(currentScale * 1.18);
+          });
+        }
+
+        updateViewportVariables();
         window.setInterval(ensureLayersVisible, 1000);
         window.addEventListener('resize', ensureLayersVisible);
         if (window.visualViewport) {
