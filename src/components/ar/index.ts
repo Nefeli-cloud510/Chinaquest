@@ -17,3 +17,6 @@ export { ClueHelper } from './clue-helper';
 export { ImageTargetAR } from './image-target-ar';
 export { TempleOfHeavenAR } from './temple-of-heaven-ar';
 export { SimpleAR } from './simple-ar';
+export { TempleARSeal } from './temple-ar-seal';
+export { TempleARReal } from './temple-ar-real';
+export { TempleARSimple } from './temple-ar-simple';

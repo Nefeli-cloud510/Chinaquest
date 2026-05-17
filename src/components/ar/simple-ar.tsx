@@ -242,6 +242,19 @@ export function SimpleAR({ onDetected, onClose }: SimpleARProps) {
     onDetected?.();
   };
 
+  // 关闭
+  const handleClose = () => {
+    // 停止相机流
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+    }
+    // 移除 MindAR 容器
+    if (containerRef.current) {
+      containerRef.current.remove();
+    }
+    onClose();
+  };
+
   // 欢迎页
   if (arState === 'welcome') {
     return (
@@ -287,7 +300,7 @@ export function SimpleAR({ onDetected, onClose }: SimpleARProps) {
           )}
           
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="mt-6 text-sm text-gray-500 hover:text-gray-700"
           >
             {language === 'zh' ? '关闭' : 'Close'}
@@ -323,7 +336,7 @@ export function SimpleAR({ onDetected, onClose }: SimpleARProps) {
         </div>
         
         <button
-          onClick={onClose}
+          onClick={handleClose}
           className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/60 text-white"
         >
           ✕
@@ -466,7 +479,7 @@ export function SimpleAR({ onDetected, onClose }: SimpleARProps) {
 
       {/* 关闭按钮 */}
       <button
-        onClick={onClose}
+        onClick={handleClose}
         className="absolute top-4 right-4 w-10 h-10 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white hover:bg-black/80 z-50"
       >
         ✕

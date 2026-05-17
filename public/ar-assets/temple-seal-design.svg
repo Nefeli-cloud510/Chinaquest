@@ -1,0 +1,79 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景：中国红 -->
+  <rect width="512" height="512" fill="#DC2626" rx="20" ry="20"/>
+  
+  <!-- 外边框：金色回纹 -->
+  <rect x="16" y="16" width="480" height="480" 
+        fill="none" 
+        stroke="#FFD700" 
+        stroke-width="8" 
+        rx="12" 
+        ry="12"/>
+  
+  <!-- 内边框：双层金线 -->
+  <rect x="28" y="28" width="456" height="456" 
+        fill="none" 
+        stroke="#FFD700" 
+        stroke-width="3" 
+        rx="8" 
+        ry="8"/>
+  
+  <!-- 四角装饰：传统纹样 -->
+  <g fill="#FFD700">
+    <!-- 左上角 -->
+    <path d="M 40 40 L 70 40 L 70 50 L 50 50 L 50 70 L 40 70 Z"/>
+    <!-- 右上角 -->
+    <path d="M 472 40 L 442 40 L 442 50 L 462 50 L 462 70 L 472 70 Z"/>
+    <!-- 左下角 -->
+    <path d="M 40 472 L 70 472 L 70 462 L 50 462 L 50 442 L 40 442 Z"/>
+    <!-- 右下角 -->
+    <path d="M 472 472 L 442 472 L 442 462 L 462 462 L 462 442 L 472 442 Z"/>
+  </g>
+  
+  <!-- 中心文字区域 -->
+  <g text-anchor="middle" fill="#FFD700">
+    <!-- 顶部：天坛简笔画 -->
+    <g transform="translate(256, 120)">
+      <!-- 三层屋檐 -->
+      <ellipse cx="0" cy="0" rx="60" ry="15" fill="none" stroke="#FFD700" stroke-width="3"/>
+      <ellipse cx="0" cy="20" rx="50" ry="12" fill="none" stroke="#FFD700" stroke-width="3"/>
+      <ellipse cx="0" cy="38" rx="40" ry="10" fill="none" stroke="#FFD700" stroke-width="3"/>
+      <!-- 宝顶 -->
+      <circle cx="0" cy="-10" r="8" fill="#FFD700"/>
+    </g>
+    
+    <!-- 中部：篆书风格文字 -->
+    <text x="256" y="240" font-size="48" font-weight="bold" letter-spacing="8" style="font-family: 'Microsoft YaHei', sans-serif;">
+      天坛
+    </text>
+    <text x="256" y="290" font-size="28" letter-spacing="4" opacity="0.9">
+      AR 体验
+    </text>
+    
+    <!-- 底部：英文 -->
+    <text x="256" y="350" font-size="20" font-style="italic" opacity="0.8">
+      TEMPLE OF HEAVEN
+    </text>
+    <text x="256" y="375" font-size="16" opacity="0.7">
+      Beijing Central Axis
+    </text>
+  </g>
+  
+  <!-- 底部装饰：波浪纹 -->
+  <g fill="none" stroke="#FFD700" stroke-width="2" transform="translate(256, 420)">
+    <path d="M -80 0 Q -60 -10 -40 0 Q -20 10 0 0 Q 20 -10 40 0 Q 60 10 80 0"/>
+  </g>
+  
+  <!-- 中心二维码区域（简化版 Hiro 编码） -->
+  <g transform="translate(256, 256)">
+    <!-- 四个定位点 -->
+    <rect x="-100" y="-100" width="40" height="40" fill="#FFD700" rx="4"/>
+    <rect x="60" y="-100" width="40" height="40" fill="#FFD700" rx="4"/>
+    <rect x="-100" y="60" width="40" height="40" fill="#FFD700" rx="4"/>
+    <rect x="60" y="60" width="40" height="40" fill="#FFD700" rx="4"/>
+    
+    <!-- 中心编码图案 -->
+    <circle r="30" fill="none" stroke="#FFD700" stroke-width="2"/>
+    <path d="M -20 -20 L 20 20 M 20 -20 L -20 20" stroke="#FFD700" stroke-width="2"/>
+  </g>
+</svg>

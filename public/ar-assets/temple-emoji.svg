@@ -1,0 +1,27 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- 天坛 emoji 风格图标 -->
+  <g transform="translate(256, 256)">
+    <!-- 三层基座 -->
+    <ellipse cx="0" cy="150" rx="200" ry="40" fill="#E5E7EB" stroke="#9CA3AF" stroke-width="3"/>
+    <ellipse cx="0" cy="120" rx="160" ry="30" fill="#F3F4F6" stroke="#9CA3AF" stroke-width="3"/>
+    <ellipse cx="0" cy="90" rx="120" ry="20" fill="#FFFFFF" stroke="#9CA3AF" stroke-width="3"/>
+    
+    <!-- 主体建筑 -->
+    <rect x="-80" y="-20" width="160" height="110" fill="#DC2626" rx="8"/>
+    
+    <!-- 三层屋檐 -->
+    <ellipse cx="0" cy="-20" rx="100" ry="20" fill="#1E40AF" stroke="#1E3A8A" stroke-width="3"/>
+    <ellipse cx="0" cy="-50" rx="80" ry="15" fill="#1E40AF" stroke="#1E3A8A" stroke-width="3"/>
+    <ellipse cx="0" cy="-75" rx="60" ry="12" fill="#1E40AF" stroke="#1E3A8A" stroke-width="3"/>
+    
+    <!-- 宝顶 -->
+    <circle cx="0" cy="-95" r="15" fill="#FFD700" stroke="#B8860B" stroke-width="2"/>
+    <circle cx="0" cy="-115" r="8" fill="#FFD700"/>
+    
+    <!-- 门窗 -->
+    <rect x="-30" y="20" width="60" height="70" fill="#FFD700" rx="4"/>
+  </g>
+  
+  <!-- 光晕效果 -->
+  <circle cx="256" cy="200" r="180" fill="none" stroke="#FFD700" stroke-width="2" opacity="0.3" stroke-dasharray="10,5"/>
+</svg>
