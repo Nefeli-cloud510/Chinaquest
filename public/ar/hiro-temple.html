@@ -7,7 +7,7 @@
       content="width=device-width, initial-scale=1, viewport-fit=cover"
     />
     <title>ChinaQuest Temple Marker AR</title>
-    <script src="https://aframe.io/releases/1.6.0/aframe.min.js"></script>
+    <script src="../vendor/aframe/aframe.min.js"></script>
     <script src="../vendor/arjs/aframe-ar.js"></script>
     <style>
       html,
@@ -271,6 +271,9 @@
         let isEntryAnimationRunning = false;
         let lastDiagnosticsSignature = '';
         let lastDiagnosticsAt = 0;
+        const SHOULD_REPORT_DIAGNOSTICS = /^(localhost|127\.0\.0\.1)$/i.test(
+          window.location.hostname
+        );
 
         function emit(type, detail) {
           if (window.parent && window.parent !== window) {
@@ -381,6 +384,10 @@
         }
 
         function reportDiagnostics(trigger, viewportWidth, viewportHeight) {
+          if (!SHOULD_REPORT_DIAGNOSTICS) {
+            return;
+          }
+
           try {
             const payload = collectDiagnostics(trigger, viewportWidth, viewportHeight);
             const signature = JSON.stringify({
