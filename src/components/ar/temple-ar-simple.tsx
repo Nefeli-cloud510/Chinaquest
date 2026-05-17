@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '@/lib/language';
+import { withBasePath } from '@/lib/base-path';
 import { Card } from '@/components/ui';
 
 interface TempleARSimpleProps {
@@ -141,7 +142,7 @@ export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
     onClose();
   };
 
-  const iframeSrc = `../ar/hiro-temple.html?lang=${language}`;
+  const iframeSrc = `${withBasePath('/ar/hiro-temple.html')}?lang=${language}`;
 
   if (arState === 'loading' || arState === 'welcome' || arState === 'error') {
     return (

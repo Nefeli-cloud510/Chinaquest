@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useLanguage } from '@/lib/language';
+import { withBasePath } from '@/lib/base-path';
 import { SiteShell } from '@/components/shell';
 import { Card } from '@/components/ui';
 import { TempleARSimple } from '@/components/ar';
@@ -55,6 +56,7 @@ export default function TempleOfHeavenPage() {
   const { language } = useLanguage();
   const [showAR, setShowAR] = useState(false);
   const [hasDetected, setHasDetected] = useState(false);
+  const markerImageSrc = withBasePath('/ar/patterns/pattern-temple_of_heaven_hiro.png');
 
   if (showAR) {
     return (
@@ -95,7 +97,7 @@ export default function TempleOfHeavenPage() {
                   {pageLabels.startAR[language]}
                 </button>
                 <a
-                  href="../ar/patterns/pattern-temple_of_heaven_hiro.png"
+                  href={markerImageSrc}
                   target="_blank"
                   rel="noreferrer"
                   className="rounded-full border border-gray-300 px-6 py-3 font-semibold text-gray-700 transition hover:bg-gray-50"
@@ -110,7 +112,7 @@ export default function TempleOfHeavenPage() {
               <p className="mt-2 text-sm leading-6 text-gray-600">{pageLabels.markerHint[language]}</p>
               <div className="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white p-3">
                 <img
-                  src="../ar/patterns/pattern-temple_of_heaven_hiro.png"
+                  src={markerImageSrc}
                   alt="Temple marker preview"
                   className="mx-auto block w-full max-w-[320px] rounded-xl object-contain"
                 />

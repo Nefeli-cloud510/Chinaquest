@@ -269,6 +269,8 @@
         let markerVisible = false;
         let hasPlayedEntryAnimation = false;
         let isEntryAnimationRunning = false;
+        let lastDiagnosticsSignature = '';
+        let lastDiagnosticsAt = 0;
 
         function emit(type, detail) {
           if (window.parent && window.parent !== window) {
@@ -313,6 +315,102 @@
             window.localStorage.setItem(SCALE_STORAGE_KEY, String(clampScale(scale)));
           } catch {
             // Ignore storage failures on restricted browsers.
+          }
+        }
+
+        function collectDiagnostics(trigger, viewportWidth, viewportHeight) {
+          const viewport = window.visualViewport;
+          const video = document.querySelector('video');
+          const canvas = document.querySelector('.a-canvas');
+          const videoRect = video ? video.getBoundingClientRect() : null;
+          const canvasRect = canvas ? canvas.getBoundingClientRect() : null;
+          const sceneCanvasRect = scene && scene.canvas ? scene.canvas.getBoundingClientRect() : null;
+
+          return {
+            trigger: trigger,
+            page: 'hiro-temple',
+            url: window.location.href,
+            userAgent: navigator.userAgent,
+            timestamp: new Date().toISOString(),
+            screen: window.screen
+              ? {
+                  width: window.screen.width,
+                  height: window.screen.height,
+                  availWidth: window.screen.availWidth,
+                  availHeight: window.screen.availHeight,
+                }
+              : {},
+            inner: {
+              width: window.innerWidth,
+              height: window.innerHeight,
+            },
+            viewport: viewport
+              ? {
+                  width: Math.round(viewport.width),
+                  height: Math.round(viewport.height),
+                  offsetTop: Math.round(viewport.offsetTop),
+                  offsetLeft: Math.round(viewport.offsetLeft),
+                }
+              : {},
+            document: {
+              clientWidth: document.documentElement.clientWidth,
+              clientHeight: document.documentElement.clientHeight,
+            },
+            target: {
+              width: viewportWidth,
+              height: viewportHeight,
+            },
+            video: {
+              domWidth: videoRect ? Math.round(videoRect.width) : 0,
+              domHeight: videoRect ? Math.round(videoRect.height) : 0,
+              sourceWidth: video && video.videoWidth ? video.videoWidth : 0,
+              sourceHeight: video && video.videoHeight ? video.videoHeight : 0,
+              readyState: video && typeof video.readyState === 'number' ? video.readyState : 0,
+            },
+            canvas: {
+              domWidth: canvasRect ? Math.round(canvasRect.width) : 0,
+              domHeight: canvasRect ? Math.round(canvasRect.height) : 0,
+              sceneWidth: sceneCanvasRect ? Math.round(sceneCanvasRect.width) : 0,
+              sceneHeight: sceneCanvasRect ? Math.round(sceneCanvasRect.height) : 0,
+            },
+            scale: {
+              preferred: preferredScale,
+              current: currentScale,
+            },
+          };
+        }
+
+        function reportDiagnostics(trigger, viewportWidth, viewportHeight) {
+          try {
+            const payload = collectDiagnostics(trigger, viewportWidth, viewportHeight);
+            const signature = JSON.stringify({
+              trigger: payload.trigger,
+              target: payload.target,
+              inner: payload.inner,
+              viewport: payload.viewport,
+              document: payload.document,
+              video: payload.video,
+              canvas: payload.canvas,
+            });
+            const now = Date.now();
+
+            if (signature === lastDiagnosticsSignature && now - lastDiagnosticsAt < 2000) {
+              return;
+            }
+
+            lastDiagnosticsSignature = signature;
+            lastDiagnosticsAt = now;
+
+            fetch('/api/ar-diagnostics', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+              keepalive: true,
+            }).catch(function () {
+              // Keep AR stable even if diagnostics upload fails.
+            });
+          } catch {
+            // Diagnostics must never break AR startup.
           }
         }
 
@@ -410,6 +508,7 @@
           document.body.style.minHeight = viewportHeight + 'px';
 
           if (!video) {
+            reportDiagnostics('no-video-yet', viewportWidth, viewportHeight);
             return false;
           }
 
@@ -486,6 +585,8 @@
               // Keep the stable AR baseline even if some devices reject manual sync.
             }
           }
+
+          reportDiagnostics('layers-visible', viewportWidth, viewportHeight);
 
           return true;
         }
@@ -591,9 +692,12 @@
           const viewportWidth = viewport ? viewport.width : window.innerWidth;
           const viewportHeight = viewport ? viewport.height : window.innerHeight;
           const three = AFRAME.THREE;
-          const worldPos = new three.Vector3();
-          modelWrapper.object3D.getWorldPosition(worldPos);
-          worldPos.y += MODEL_HEIGHT * Math.max(currentScale, preferredScale * 0.25) + 0.005;
+          const worldPos = new three.Vector3(
+            0,
+            MODEL_HEIGHT * Math.max(currentScale, preferredScale * 0.25) + 0.005,
+            0
+          );
+          model.object3D.localToWorld(worldPos);
           worldPos.project(scene.camera);
 
           const x = (worldPos.x * 0.5 + 0.5) * viewportWidth;
@@ -622,17 +726,20 @@
               ? 'AR scene loaded. Point the camera at the custom Temple marker.'
               : 'AR scene loaded, but camera video is not visible yet.'
           );
+          window.setTimeout(ensureLayersVisible, 500);
           emit('scene-loaded');
         });
 
         scene.addEventListener('camera-init', function () {
           ensureLayersVisible();
+          window.setTimeout(ensureLayersVisible, 800);
           setStatus('Camera initialized. Point the camera at the custom Temple marker.');
           emit('camera-init');
         });
 
         scene.addEventListener('render-target-loaded', function () {
           ensureLayersVisible();
+          window.setTimeout(ensureLayersVisible, 500);
         });
 
         scene.addEventListener('camera-error', function (event) {
@@ -643,6 +750,7 @@
 
         marker.addEventListener('markerFound', function () {
           markerVisible = true;
+          ensureLayersVisible();
           setStatus(
             currentLanguage === 'zh'
               ? '已识别到天坛标记。模型已贴合 marker，点击天坛气泡可开始对话。'
