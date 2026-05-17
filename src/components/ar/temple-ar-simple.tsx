@@ -71,6 +71,10 @@ export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
   };
 
   useEffect(() => {
+    window.dispatchEvent(
+      new CustomEvent('chinaquest-ar-visibility', { detail: { hidden: true } })
+    );
+
     const handleMessage = (event: MessageEvent) => {
       if (event.origin !== window.location.origin) {
         return;
@@ -112,6 +116,9 @@ export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
     window.addEventListener('message', handleMessage);
 
     return () => {
+      window.dispatchEvent(
+        new CustomEvent('chinaquest-ar-visibility', { detail: { hidden: false } })
+      );
       window.removeEventListener('message', handleMessage);
     };
   }, [language, onDetected]);
@@ -175,7 +182,10 @@ export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
   }
 
   return (
-    <div ref={containerRef} className="fixed inset-0 z-50 bg-black">
+    <div
+      ref={containerRef}
+      className="fixed inset-0 z-50 h-full w-full overflow-hidden bg-black"
+    >
       <iframe
         ref={iframeRef}
         title="ChinaQuest Temple AR"

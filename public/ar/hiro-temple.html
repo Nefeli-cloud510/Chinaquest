@@ -27,18 +27,14 @@
         inset: 0 !important;
         width: var(--cq-vw, 100vw) !important;
         height: var(--cq-vh, 100vh) !important;
-        min-width: var(--cq-vw, 100dvw) !important;
-        min-height: var(--cq-vh, 100dvh) !important;
       }
 
       video {
         z-index: 1 !important;
         display: block !important;
-        object-fit: cover !important;
         background: #000 !important;
-        top: 50% !important;
-        left: 50% !important;
-        transform: translate(-50%, -50%) !important;
+        object-fit: cover !important;
+        object-position: center center !important;
       }
 
       .a-canvas,
@@ -108,7 +104,7 @@
         left: 0;
         z-index: 10002;
         display: none;
-        max-width: min(280px, calc(100vw - 32px));
+        max-width: min(420px, calc(100vw - 16px));
         transform: translate(-50%, -102%);
         pointer-events: auto;
       }
@@ -129,14 +125,14 @@
 
       .narrative-prompt {
         display: none;
-        padding: 10px 14px;
+        padding: 15px 20px;
         border: 1px solid rgba(255, 255, 255, 0.14);
-        font: 600 13px/1.4 Arial, sans-serif;
+        font: 600 17px/1.45 Arial, sans-serif;
       }
 
       .narrative-bubble {
         display: none;
-        padding: 14px 16px;
+        padding: 20px 22px;
         border: 1px solid rgba(245, 158, 11, 0.28);
       }
 
@@ -146,18 +142,18 @@
       }
 
       .narrative-title {
-        font: 600 13px/1.2 Arial, sans-serif;
+        font: 600 17px/1.2 Arial, sans-serif;
         color: #fbbf24;
       }
 
       .narrative-text {
         margin-top: 8px;
-        font: 13px/1.55 Arial, sans-serif;
+        font: 17px/1.62 Arial, sans-serif;
       }
 
       .narrative-tip {
         margin-top: 10px;
-        font: 12px/1.4 Arial, sans-serif;
+        font: 15px/1.45 Arial, sans-serif;
         color: rgba(255, 255, 255, 0.68);
       }
     </style>
@@ -212,7 +208,7 @@
             gltf-model="#temple-model"
             position="0 0 0"
             rotation="-90 180 180"
-            scale="0.00032 0.00032 0.00032"
+            scale="0.00056 0.00056 0.00056"
           ></a-entity>
         </a-entity>
       </a-marker>
@@ -243,8 +239,14 @@
         const narrativeTitle = document.getElementById('narrative-title');
         const narrativeText = document.getElementById('narrative-text');
         const narrativeTip = document.getElementById('narrative-tip');
-        const DEFAULT_SCALE = 0.00032;
+        const DEFAULT_SCALE = 0.00056;
+        const SCALE_STORAGE_KEY = 'chinaquest.temple-ar.scale';
+        const SCALE_MIN = 0.0002;
+        const SCALE_MAX = 0.0018;
+        const BASE_ROTATION = { x: -90, y: 180, z: 180 };
         const MODEL_HEIGHT = 1812.66619873;
+        const ENTRY_RISE = 0.18;
+        const ENTRY_DURATION_MS = 2000;
         const HIDDEN_MESHES = new Set(['Di_mian04']);
         const narrativeLines = {
           zh: [
@@ -260,10 +262,13 @@
             'Keep exploring. More stories, missions, and interactions can be added here next.',
           ],
         };
+        let preferredScale = DEFAULT_SCALE;
         let currentScale = DEFAULT_SCALE;
         let currentLanguage = 'en';
         let narrativeIndex = -1;
         let markerVisible = false;
+        let hasPlayedEntryAnimation = false;
+        let isEntryAnimationRunning = false;
 
         function emit(type, detail) {
           if (window.parent && window.parent !== window) {
@@ -286,6 +291,31 @@
           }
         }
 
+        function clampScale(scale) {
+          return Math.max(SCALE_MIN, Math.min(SCALE_MAX, scale));
+        }
+
+        function loadPreferredScale() {
+          try {
+            const raw = window.localStorage.getItem(SCALE_STORAGE_KEY);
+            if (!raw) {
+              return DEFAULT_SCALE;
+            }
+            const parsed = Number(raw);
+            return Number.isFinite(parsed) ? clampScale(parsed) : DEFAULT_SCALE;
+          } catch {
+            return DEFAULT_SCALE;
+          }
+        }
+
+        function savePreferredScale(scale) {
+          try {
+            window.localStorage.setItem(SCALE_STORAGE_KEY, String(clampScale(scale)));
+          } catch {
+            // Ignore storage failures on restricted browsers.
+          }
+        }
+
         function getLang() {
           const queryLang = new URLSearchParams(window.location.search).get('lang');
           return queryLang === 'zh' ? 'zh' : 'en';
@@ -304,7 +334,7 @@
 
         function resetNarrative() {
           narrativeIndex = -1;
-          setNarrativeVisibility(markerVisible, false);
+          setNarrativeVisibility(false, false);
         }
 
         function advanceNarrative() {
@@ -333,67 +363,52 @@
           setNarrativeVisibility(false, true);
         }
 
-        function updateViewportVariables() {
+        function getViewportSize() {
           const viewport = window.visualViewport;
-          const viewportWidth = viewport ? viewport.width : window.innerWidth;
-          const viewportHeight = viewport ? viewport.height : window.innerHeight;
-          document.documentElement.style.setProperty('--cq-vw', viewportWidth + 'px');
-          document.documentElement.style.setProperty('--cq-vh', viewportHeight + 'px');
-          document.body.style.width = viewportWidth + 'px';
-          document.body.style.height = viewportHeight + 'px';
-          scene.style.width = viewportWidth + 'px';
-          scene.style.height = viewportHeight + 'px';
-        }
+          const docEl = document.documentElement;
+          const screenWidth = window.screen
+            ? Math.max(window.screen.width || 0, window.screen.availWidth || 0)
+            : 0;
+          const screenHeight = window.screen
+            ? Math.max(window.screen.height || 0, window.screen.availHeight || 0)
+            : 0;
+          const widthCandidates = [
+            window.innerWidth,
+            docEl ? docEl.clientWidth : 0,
+            viewport ? Math.round(viewport.width) : 0,
+            viewport ? Math.round(viewport.width + viewport.offsetLeft) : 0,
+            screenWidth,
+          ].filter(Boolean);
+          const heightCandidates = [
+            window.innerHeight,
+            docEl ? docEl.clientHeight : 0,
+            viewport ? Math.round(viewport.height) : 0,
+            viewport ? Math.round(viewport.height + viewport.offsetTop) : 0,
+            screenHeight,
+          ].filter(Boolean);
 
-        function forceFullscreenStyle(element, zIndex) {
-          element.style.position = 'fixed';
-          element.style.top = '50%';
-          element.style.left = '50%';
-          element.style.right = 'auto';
-          element.style.bottom = 'auto';
-          element.style.transform = 'translate(-50%, -50%)';
-          element.style.margin = '0';
-          element.style.padding = '0';
-          element.style.display = 'block';
-          element.style.opacity = '1';
-          element.style.visibility = 'visible';
-          element.style.zIndex = String(zIndex);
-          element.style.maxWidth = 'none';
-          element.style.maxHeight = 'none';
-          element.style.background = 'transparent';
-          element.style.border = '0';
-        }
-
-        function resizeElementToCover(element, sourceWidth, sourceHeight, zIndex) {
-          const viewport = window.visualViewport;
-          const viewportWidth = viewport ? viewport.width : window.innerWidth;
-          const viewportHeight = viewport ? viewport.height : window.innerHeight;
-          const mediaWidth = sourceWidth || 1280;
-          const mediaHeight = sourceHeight || 720;
-          const viewportRatio = viewportWidth / viewportHeight;
-          const mediaRatio = mediaWidth / mediaHeight;
-          const overscan = 48;
-
-          let renderWidth = viewportWidth;
-          let renderHeight = viewportHeight;
-
-          if (mediaRatio > viewportRatio) {
-            renderHeight = viewportHeight + overscan;
-            renderWidth = renderHeight * mediaRatio;
-          } else {
-            renderWidth = viewportWidth + overscan;
-            renderHeight = renderWidth / mediaRatio;
-          }
-
-          forceFullscreenStyle(element, zIndex);
-          element.style.width = renderWidth + 'px';
-          element.style.height = renderHeight + 'px';
+          return {
+            width: Math.max.apply(null, widthCandidates),
+            height: Math.max.apply(null, heightCandidates),
+          };
         }
 
         function ensureLayersVisible() {
-          updateViewportVariables();
           const video = document.querySelector('video');
           const canvas = document.querySelector('.a-canvas');
+          const viewportSize = getViewportSize();
+          const viewportWidth = viewportSize.width;
+          const viewportHeight = viewportSize.height;
+
+          document.documentElement.style.setProperty('--cq-vw', viewportWidth + 'px');
+          document.documentElement.style.setProperty('--cq-vh', viewportHeight + 'px');
+          document.documentElement.style.width = viewportWidth + 'px';
+          document.documentElement.style.height = viewportHeight + 'px';
+          document.documentElement.style.minHeight = viewportHeight + 'px';
+          document.body.style.width = viewportWidth + 'px';
+          document.body.style.height = viewportHeight + 'px';
+          document.body.style.minHeight = viewportHeight + 'px';
+
           if (!video) {
             return false;
           }
@@ -403,23 +418,153 @@
           video.style.display = 'block';
           video.style.opacity = '1';
           video.style.visibility = 'visible';
+          video.style.position = 'fixed';
+          video.style.inset = '0';
+          video.style.bottom = '0';
+          video.style.right = '0';
+          video.style.zIndex = '1';
           video.style.objectFit = 'cover';
-          resizeElementToCover(video, video.videoWidth, video.videoHeight, 1);
+          video.style.objectPosition = 'center center';
+          video.style.transform = 'none';
+          video.style.width = viewportWidth + 'px';
+          video.style.height = viewportHeight + 'px';
+          video.style.minWidth = viewportWidth + 'px';
+          video.style.minHeight = viewportHeight + 'px';
+          video.style.maxWidth = 'none';
+          video.style.maxHeight = 'none';
 
           if (canvas) {
-            resizeElementToCover(canvas, video.videoWidth, video.videoHeight, 2);
+            canvas.style.position = 'fixed';
+            canvas.style.inset = '0';
+            canvas.style.bottom = '0';
+            canvas.style.right = '0';
+            canvas.style.width = viewportWidth + 'px';
+            canvas.style.height = viewportHeight + 'px';
+            canvas.style.minWidth = viewportWidth + 'px';
+            canvas.style.minHeight = viewportHeight + 'px';
+            canvas.style.display = 'block';
+            canvas.style.zIndex = '2';
+          }
+
+          if (scene.canvas) {
+            scene.canvas.style.position = 'fixed';
+            scene.canvas.style.inset = '0';
+            scene.canvas.style.bottom = '0';
+            scene.canvas.style.right = '0';
+            scene.canvas.style.width = viewportWidth + 'px';
+            scene.canvas.style.height = viewportHeight + 'px';
+            scene.canvas.style.minWidth = viewportWidth + 'px';
+            scene.canvas.style.minHeight = viewportHeight + 'px';
           }
 
           scene.style.position = 'fixed';
           scene.style.inset = '0';
+          scene.style.bottom = '0';
+          scene.style.right = '0';
+          scene.style.width = viewportWidth + 'px';
+          scene.style.height = viewportHeight + 'px';
+          scene.style.minWidth = viewportWidth + 'px';
+          scene.style.minHeight = viewportHeight + 'px';
           scene.style.zIndex = '2';
+
+          if (scene.renderer && scene.camera) {
+            try {
+              scene.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+              scene.renderer.setSize(viewportWidth, viewportHeight, false);
+              if (scene.canvas) {
+                scene.canvas.width = viewportWidth;
+                scene.canvas.height = viewportHeight;
+              }
+              if (
+                typeof scene.camera.aspect === 'number' &&
+                typeof scene.camera.updateProjectionMatrix === 'function'
+              ) {
+                scene.camera.aspect = viewportWidth / Math.max(viewportHeight, 1);
+                scene.camera.updateProjectionMatrix();
+              }
+            } catch {
+              // Keep the stable AR baseline even if some devices reject manual sync.
+            }
+          }
+
           return true;
         }
 
-        function applyScale(scale) {
-          currentScale = Math.max(0.0002, Math.min(0.0018, scale));
+        function applyScale(scale, shouldPersist) {
+          currentScale = clampScale(scale);
+          if (shouldPersist !== false) {
+            preferredScale = currentScale;
+            savePreferredScale(preferredScale);
+          }
           model.setAttribute('scale', `${currentScale} ${currentScale} ${currentScale}`);
           model.setAttribute('position', '0 0 0');
+        }
+
+        function applyBaseRotation(extraYDegrees) {
+          const y = BASE_ROTATION.y + (extraYDegrees || 0);
+          model.setAttribute('rotation', `${BASE_ROTATION.x} ${y} ${BASE_ROTATION.z}`);
+        }
+
+        function setFinalPlacement() {
+          modelWrapper.setAttribute('position', '0 0 0');
+          applyScale(preferredScale, false);
+          applyBaseRotation(0);
+        }
+
+        function setEntryStartPlacement() {
+          modelWrapper.setAttribute('position', `0 ${-ENTRY_RISE} 0`);
+          model.setAttribute('scale', '0 0 0');
+          currentScale = 0;
+          applyBaseRotation(0);
+        }
+
+        function easeInOutSine(t) {
+          return -(Math.cos(Math.PI * t) - 1) / 2;
+        }
+
+        function playEntryAnimation() {
+          if (hasPlayedEntryAnimation || isEntryAnimationRunning) {
+            setFinalPlacement();
+            resetNarrative();
+            return;
+          }
+
+          hasPlayedEntryAnimation = true;
+          isEntryAnimationRunning = true;
+          resetNarrative();
+          setEntryStartPlacement();
+          modelWrapper.setAttribute('visible', 'true');
+
+          const startTime = performance.now();
+
+          function step(now) {
+            const elapsed = now - startTime;
+            const progress = Math.min(elapsed / ENTRY_DURATION_MS, 1);
+            const eased = easeInOutSine(progress);
+            const currentY = -ENTRY_RISE * (1 - eased);
+            const scale = preferredScale * eased;
+            const spin = 360 * eased;
+
+            modelWrapper.setAttribute('position', `0 ${currentY.toFixed(6)} 0`);
+            currentScale = scale;
+            model.setAttribute('scale', `${scale} ${scale} ${scale}`);
+            model.setAttribute('position', '0 0 0');
+            applyBaseRotation(spin);
+
+            if (progress < 1) {
+              window.requestAnimationFrame(step);
+              return;
+            }
+
+            isEntryAnimationRunning = false;
+            setFinalPlacement();
+            resetNarrative();
+            if (markerVisible) {
+              setNarrativeVisibility(true, false);
+            }
+          }
+
+          window.requestAnimationFrame(step);
         }
 
         function hideUnwantedMeshes(root) {
@@ -448,7 +593,7 @@
           const three = AFRAME.THREE;
           const worldPos = new three.Vector3();
           modelWrapper.object3D.getWorldPosition(worldPos);
-          worldPos.y += MODEL_HEIGHT * currentScale + 0.02;
+          worldPos.y += MODEL_HEIGHT * Math.max(currentScale, preferredScale * 0.25) + 0.005;
           worldPos.project(scene.camera);
 
           const x = (worldPos.x * 0.5 + 0.5) * viewportWidth;
@@ -464,6 +609,8 @@
 
         scene.addEventListener('loaded', function () {
           currentLanguage = getLang();
+          preferredScale = loadPreferredScale();
+          currentScale = preferredScale;
           if (narrativePrompt) {
             narrativePrompt.textContent =
               currentLanguage === 'zh' ? '点击天坛，开始对话。' : 'Tap the Temple to start the story.';
@@ -484,6 +631,10 @@
           emit('camera-init');
         });
 
+        scene.addEventListener('render-target-loaded', function () {
+          ensureLayersVisible();
+        });
+
         scene.addEventListener('camera-error', function (event) {
           const detail = event && event.detail ? JSON.stringify(event.detail) : 'Camera error.';
           setStatus(detail);
@@ -492,14 +643,20 @@
 
         marker.addEventListener('markerFound', function () {
           markerVisible = true;
-          resetNarrative();
           setStatus(
             currentLanguage === 'zh'
               ? '已识别到天坛标记。模型已贴合 marker，点击天坛气泡可开始对话。'
               : 'Temple marker detected. Tap the model to start the dialogue.'
           );
           if (modelWrapper) {
-            modelWrapper.setAttribute('visible', 'true');
+            if (!hasPlayedEntryAnimation) {
+              playEntryAnimation();
+            } else {
+              modelWrapper.setAttribute('visible', 'true');
+              setFinalPlacement();
+              resetNarrative();
+              setNarrativeVisibility(true, false);
+            }
           }
           emit('marker-found');
         });
@@ -508,7 +665,7 @@
           markerVisible = false;
           setNarrativeVisibility(false, false);
           setStatus('Marker lost. Move the Temple marker back into view.');
-          if (modelWrapper) {
+          if (modelWrapper && !isEntryAnimationRunning) {
             modelWrapper.setAttribute('visible', 'false');
           }
           emit('marker-lost');
@@ -520,7 +677,8 @@
             hideUnwantedMeshes(meshRoot);
           }
 
-          applyScale(DEFAULT_SCALE);
+          applyScale(preferredScale, false);
+          applyBaseRotation(0);
           if (modelWrapper) {
             modelWrapper.setAttribute('visible', 'false');
           }
@@ -579,10 +737,10 @@
           });
         }
 
-        updateViewportVariables();
         window.requestAnimationFrame(animationTick);
         window.setInterval(ensureLayersVisible, 1000);
         window.addEventListener('resize', ensureLayersVisible);
+        window.addEventListener('orientationchange', ensureLayersVisible);
         if (window.visualViewport) {
           window.visualViewport.addEventListener('resize', ensureLayersVisible);
         }

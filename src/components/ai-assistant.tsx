@@ -8,6 +8,7 @@ const API_KEY = typeof window !== 'undefined' ? (window as any).__QWEN_API_KEY :
 
 export function AIAssistant() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isHiddenByAR, setIsHiddenByAR] = useState(false);
   const [activeTab, setActiveTab] = useState<'scene' | 'summary' | 'chat'>('scene');
   const [input, setInput] = useState('');
   const [messages, setMessages] = useState<{ role: 'user' | 'ai'; content: string }[]>([]);
@@ -21,6 +22,22 @@ export function AIAssistant() {
   useEffect(() => {
     scrollToBottom();
   }, [messages, scrollToBottom]);
+
+  useEffect(() => {
+    const handleVisibility = (event: Event) => {
+      const customEvent = event as CustomEvent<{ hidden?: boolean }>;
+      const hidden = Boolean(customEvent.detail?.hidden);
+      setIsHiddenByAR(hidden);
+      if (hidden) {
+        setIsOpen(false);
+      }
+    };
+
+    window.addEventListener('chinaquest-ar-visibility', handleVisibility as EventListener);
+    return () => {
+      window.removeEventListener('chinaquest-ar-visibility', handleVisibility as EventListener);
+    };
+  }, []);
 
   const systemPrompt = `You are ChinaQuest's "Cultural Explorer", a professional cultural guide and travel advisors. Your tasks are:
 1. Provide professional, friendly, and engaging cultural explanations for international tourists
@@ -87,6 +104,10 @@ Important guidelines:
       setIsLoading(false);
     }
   }, [input, messages, isLoading]);
+
+  if (isHiddenByAR) {
+    return null;
+  }
 
   return (
     <div className="fixed bottom-6 right-6 z-50">
