@@ -78,6 +78,23 @@
         font: 13px/1.4 Arial, sans-serif;
       }
 
+      .debug-log {
+        position: fixed;
+        left: 12px;
+        right: 12px;
+        bottom: 68px;
+        z-index: 10000;
+        max-height: 24vh;
+        overflow: auto;
+        padding: 8px 10px;
+        border-radius: 12px;
+        background: rgba(0, 0, 0, 0.58);
+        color: rgba(255, 255, 255, 0.88);
+        font: 11px/1.45 Consolas, Monaco, monospace;
+        white-space: pre-wrap;
+        pointer-events: none;
+      }
+
       .scale-controls {
         position: fixed;
         left: 12px;
@@ -161,6 +178,7 @@
   <body>
     <div class="arjs-loader" id="loader">Loading AR scene...</div>
     <div class="status" id="status">Initializing AR...</div>
+    <pre class="debug-log" id="debug-log">booting...</pre>
     <div class="scale-controls" aria-label="Model scale controls">
       <button id="scale-down" type="button" aria-label="Scale down">-</button>
       <button id="scale-reset" type="button" aria-label="Reset scale">1:1</button>
@@ -226,6 +244,7 @@
         const origin = window.location.origin;
         const loader = document.getElementById('loader');
         const status = document.getElementById('status');
+        const debugLogPanel = document.getElementById('debug-log');
         const scene = document.querySelector('a-scene');
         const marker = document.getElementById('hiro-marker');
         const model = document.getElementById('temple-entity');
@@ -271,6 +290,8 @@
         let hasPlayedEntryAnimation = false;
         let isEntryAnimationRunning = false;
         const SHOULD_REPORT_DIAGNOSTICS = false;
+        const debugLines = [];
+        let trackedVideo = null;
 
         function emit(type, detail) {
           if (window.parent && window.parent !== window) {
@@ -291,6 +312,19 @@
           if (status) {
             status.textContent = message;
           }
+        }
+
+        function pushDebug(message) {
+          const timestamp = new Date().toISOString().slice(11, 19);
+          const line = `[${timestamp}] ${message}`;
+          debugLines.push(line);
+          while (debugLines.length > 10) {
+            debugLines.shift();
+          }
+          if (debugLogPanel) {
+            debugLogPanel.textContent = debugLines.join('\n');
+          }
+          emit('debug', line);
         }
 
         function clampScale(scale) {
@@ -479,8 +513,26 @@
           document.body.style.minHeight = viewportHeight + 'px';
 
           if (!video) {
+            pushDebug('video element not ready yet');
             reportDiagnostics('no-video-yet', viewportWidth, viewportHeight);
             return false;
+          }
+
+          if (trackedVideo !== video) {
+            trackedVideo = video;
+            pushDebug('video element attached');
+            video.addEventListener('loadedmetadata', function () {
+              pushDebug(`video metadata ${video.videoWidth}x${video.videoHeight}`);
+            });
+            video.addEventListener('playing', function () {
+              pushDebug('video playing');
+            });
+            video.addEventListener('stalled', function () {
+              pushDebug('video stalled');
+            });
+            video.addEventListener('error', function () {
+              pushDebug('video error');
+            });
           }
 
           video.setAttribute('playsinline', 'true');
@@ -706,7 +758,17 @@
           window.requestAnimationFrame(animationTick);
         }
 
+        function scheduleEnsureLayersVisible() {
+          [250, 800, 1600, 2600].forEach(function (delay) {
+            window.setTimeout(ensureLayersVisible, delay);
+          });
+        }
+
+        pushDebug('script booted');
+        pushDebug(window.AFRAME ? 'AFRAME ready' : 'AFRAME missing');
+
         scene.addEventListener('loaded', function () {
+          pushDebug('scene loaded');
           currentLanguage = getLang();
           preferredScale = loadPreferredScale();
           currentScale = preferredScale;
@@ -721,24 +783,27 @@
               ? 'AR scene loaded. Point the camera at the custom Temple marker.'
               : 'AR scene loaded, but camera video is not visible yet.'
           );
-          window.setTimeout(ensureLayersVisible, 500);
+          scheduleEnsureLayersVisible();
           emit('scene-loaded');
         });
 
         scene.addEventListener('camera-init', function () {
+          pushDebug('camera-init');
           ensureLayersVisible();
-          window.setTimeout(ensureLayersVisible, 800);
+          scheduleEnsureLayersVisible();
           setStatus('Camera initialized. Point the camera at the custom Temple marker.');
           emit('camera-init');
         });
 
         scene.addEventListener('render-target-loaded', function () {
+          pushDebug('render-target-loaded');
           ensureLayersVisible();
-          window.setTimeout(ensureLayersVisible, 500);
+          scheduleEnsureLayersVisible();
         });
 
         scene.addEventListener('camera-error', function (event) {
           const detail = event && event.detail ? JSON.stringify(event.detail) : 'Camera error.';
+          pushDebug(`camera-error ${detail}`);
           setStatus(detail);
           emit('error', detail);
         });
@@ -775,6 +840,7 @@
         });
 
         model.addEventListener('model-loaded', function () {
+          pushDebug('model-loaded');
           const meshRoot = model.getObject3D('mesh');
           if (meshRoot) {
             hideUnwantedMeshes(meshRoot);
@@ -794,18 +860,16 @@
         });
 
         model.addEventListener('model-error', function () {
+          pushDebug('model-error');
           setStatus('Temple model failed to load, but marker test can still continue.');
           emit('error', 'Temple model failed to load.');
         });
 
         window.addEventListener('error', function (event) {
+          pushDebug(`window-error ${event.message || 'unknown'}`);
           setStatus(event.message || 'Unknown runtime error.');
           emit('error', event.message || 'Unknown runtime error.');
         });
-
-        new MutationObserver(function () {
-          ensureLayersVisible();
-        }).observe(document.body, { childList: true, subtree: true });
 
         if (scaleDownButton) {
           scaleDownButton.addEventListener('click', function () {
@@ -841,12 +905,21 @@
         }
 
         window.requestAnimationFrame(animationTick);
-        window.setInterval(ensureLayersVisible, 1000);
         window.addEventListener('resize', ensureLayersVisible);
         window.addEventListener('orientationchange', ensureLayersVisible);
         if (window.visualViewport) {
           window.visualViewport.addEventListener('resize', ensureLayersVisible);
         }
+        window.setTimeout(function () {
+          if (!trackedVideo) {
+            pushDebug('watchdog: no video after 4s');
+          }
+        }, 4000);
+        window.setTimeout(function () {
+          if (!trackedVideo) {
+            pushDebug('watchdog: still no video after 8s');
+          }
+        }, 8000);
       })();
     </script>
   </body>

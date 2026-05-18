@@ -91,6 +91,11 @@ export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
         case 'scene-loaded':
           setDebugInfo(labels.sceneLoaded[language]);
           break;
+        case 'debug':
+          if (typeof data.detail === 'string') {
+            setDebugInfo(data.detail);
+          }
+          break;
         case 'model-loaded':
           setDebugInfo(labels.modelLoaded[language]);
           break;
