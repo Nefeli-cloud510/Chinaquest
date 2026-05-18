@@ -100,6 +100,23 @@
         display: block;
       }
 
+      .runtime-debug {
+        position: fixed;
+        left: 12px;
+        bottom: 60px;
+        z-index: 10000;
+        max-width: min(320px, calc(100vw - 24px));
+        max-height: 32vh;
+        overflow: auto;
+        padding: 8px 10px;
+        border-radius: 12px;
+        background: rgba(0, 0, 0, 0.62);
+        color: rgba(255, 255, 255, 0.92);
+        font: 11px/1.4 Consolas, Monaco, monospace;
+        white-space: pre-wrap;
+        pointer-events: none;
+      }
+
       .scale-controls {
         position: fixed;
         left: 12px;
@@ -212,6 +229,7 @@
     <div class="arjs-loader" id="loader">Loading AR scene...</div>
     <div class="status" id="status">Initializing AR...</div>
     <pre class="debug-log" id="debug-log">booting...</pre>
+    <pre class="runtime-debug" id="runtime-debug">collecting runtime info...</pre>
     <div class="scale-controls" aria-label="Model scale controls">
       <button id="scale-down" type="button" aria-label="Scale down">-</button>
       <button id="scale-reset" type="button" aria-label="Reset scale">1:1</button>
@@ -274,6 +292,7 @@
         const loader = document.getElementById('loader');
         const status = document.getElementById('status');
         const debugLogPanel = document.getElementById('debug-log');
+        const runtimeDebugPanel = document.getElementById('runtime-debug');
         const scene = document.querySelector('a-scene');
         const marker = document.getElementById('hiro-marker');
         const model = document.getElementById('temple-entity');
@@ -324,6 +343,7 @@
         const DEBUG_ENABLED = new URLSearchParams(window.location.search).get('debug') === '1';
         const debugLines = [];
         let trackedVideo = null;
+        let lastStatusMessage = 'Initializing AR...';
 
         function emit(type, detail) {
           if (window.parent && window.parent !== window) {
@@ -341,9 +361,11 @@
         }
 
         function setStatus(message) {
+          lastStatusMessage = message;
           if (status) {
             status.textContent = message;
           }
+          refreshRuntimeDebug();
         }
 
         function pushDebug(message) {
@@ -538,6 +560,41 @@
           };
         }
 
+        function refreshRuntimeDebug() {
+          if (!runtimeDebugPanel) {
+            return;
+          }
+
+          const viewportSize = getViewportSize();
+          const viewport = window.visualViewport;
+          const video = document.querySelector('video');
+          const canvas = document.querySelector('.a-canvas');
+          const mesh = model.getObject3D('mesh');
+          const videoRect = video ? video.getBoundingClientRect() : null;
+          const canvasRect = canvas ? canvas.getBoundingClientRect() : null;
+          const sceneCanvasRect = scene && scene.canvas ? scene.canvas.getBoundingClientRect() : null;
+          const rotation = model.getAttribute('rotation');
+          const scale = model.getAttribute('scale');
+          const wrapperVisible = modelWrapper ? modelWrapper.getAttribute('visible') : false;
+          const meshVisible = mesh ? mesh.visible : false;
+          const activeEvents = debugLines.slice(-3).join(' | ') || 'none';
+
+          runtimeDebugPanel.textContent = [
+            `status=${lastStatusMessage}`,
+            `marker=${markerVisible} modelReady=${modelReady} mesh=${!!mesh} meshVisible=${meshVisible}`,
+            `wrapperVisible=${wrapperVisible} entryRunning=${isEntryAnimationRunning}`,
+            `vw=${viewportSize.width} vh=${viewportSize.height} inner=${window.innerWidth}x${window.innerHeight}`,
+            `vv=${viewport ? `${Math.round(viewport.width)}x${Math.round(viewport.height)}@${Math.round(viewport.offsetTop)}` : 'none'}`,
+            `videoDom=${videoRect ? `${Math.round(videoRect.width)}x${Math.round(videoRect.height)}` : 'none'}`,
+            `videoSrc=${video && video.videoWidth ? `${video.videoWidth}x${video.videoHeight}` : '0x0'} ready=${video && typeof video.readyState === 'number' ? video.readyState : 0}`,
+            `canvas=${canvasRect ? `${Math.round(canvasRect.width)}x${Math.round(canvasRect.height)}` : 'none'} sceneCanvas=${sceneCanvasRect ? `${Math.round(sceneCanvasRect.width)}x${Math.round(sceneCanvasRect.height)}` : 'none'}`,
+            `scale=${scale ? `${Number(scale.x || 0).toFixed(6)}` : currentScale.toFixed(6)} pref=${preferredScale.toFixed(6)}`,
+            `rot=${rotation ? `${rotation.x} ${rotation.y} ${rotation.z}` : 'n/a'}`,
+            `modelPos=${modelWrapper ? modelWrapper.getAttribute('position').x : 0} ${modelWrapper ? modelWrapper.getAttribute('position').y : 0} ${modelWrapper ? modelWrapper.getAttribute('position').z : 0}`,
+            `events=${activeEvents}`,
+          ].join('\n');
+        }
+
         function ensureLayersVisible() {
           const video = document.querySelector('video');
           const canvas = document.querySelector('.a-canvas');
@@ -551,6 +608,7 @@
           if (!video) {
             pushDebug('video element not ready yet');
             reportDiagnostics('no-video-yet', viewportWidth, viewportHeight);
+            refreshRuntimeDebug();
             return false;
           }
 
@@ -634,6 +692,7 @@
           }
 
           reportDiagnostics('layers-visible', viewportWidth, viewportHeight);
+          refreshRuntimeDebug();
 
           return true;
         }
@@ -646,11 +705,13 @@
           }
           model.setAttribute('scale', `${currentScale} ${currentScale} ${currentScale}`);
           model.setAttribute('position', '0 0 0');
+          refreshRuntimeDebug();
         }
 
         function applyBaseRotation(extraYDegrees) {
           const y = BASE_ROTATION.y + (extraYDegrees || 0);
           model.setAttribute('rotation', `${BASE_ROTATION.x} ${y} ${BASE_ROTATION.z}`);
+          refreshRuntimeDebug();
         }
 
         function setFinalPlacement() {
@@ -831,6 +892,7 @@
         if (debugLogPanel) {
           debugLogPanel.classList.toggle('visible', DEBUG_ENABLED);
         }
+        refreshRuntimeDebug();
         pushDebug('script booted');
         pushDebug(window.AFRAME ? 'AFRAME ready' : 'AFRAME missing');
 
@@ -984,6 +1046,7 @@
         window.requestAnimationFrame(animationTick);
         window.addEventListener('resize', ensureLayersVisible);
         window.addEventListener('orientationchange', ensureLayersVisible);
+        window.setInterval(refreshRuntimeDebug, 1200);
         window.setTimeout(function () {
           if (!trackedVideo) {
             pushDebug('watchdog: no video after 4s');
