@@ -52,6 +52,7 @@ export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
   const { language } = useLanguage();
   const [arState, setARState] = useState<ARState>('welcome');
   const [debugInfo, setDebugInfo] = useState(labels.cameraHint.zh);
+  const [sessionToken, setSessionToken] = useState(() => Date.now());
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const hasTriggeredDetectedRef = useRef(false);
@@ -126,6 +127,7 @@ export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
 
   const startAR = async () => {
     hasTriggeredDetectedRef.current = false;
+    setSessionToken(Date.now());
     await requestFullscreenIfPossible();
     setARState('scanning');
     setDebugInfo(labels.cameraHint[language]);
@@ -142,7 +144,7 @@ export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
     onClose();
   };
 
-  const iframeSrc = `${withBasePath('/ar/hiro-temple.html')}?lang=${language}`;
+  const iframeSrc = `${withBasePath('/ar/hiro-temple.html')}?lang=${language}&session=${sessionToken}`;
 
   if (arState === 'loading' || arState === 'welcome' || arState === 'error') {
     return (
@@ -188,10 +190,12 @@ export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
       className="fixed inset-0 z-50 h-full w-full overflow-hidden bg-black"
     >
       <iframe
+        key={sessionToken}
         ref={iframeRef}
         title="ChinaQuest Temple AR"
         src={iframeSrc}
-        allow="camera; microphone; fullscreen"
+        allow="camera *; microphone *; fullscreen *"
+        allowFullScreen
         className="absolute inset-0 h-full w-full border-0 bg-black"
         onLoad={() => {
           setDebugInfo(labels.scanning[language]);
