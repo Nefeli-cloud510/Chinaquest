@@ -235,7 +235,7 @@
       arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false; detectionMode: mono;"
     >
       <a-assets>
-        <a-asset-item id="temple-model" src="../ar-models/temple-of-heaven-mobile.glb"></a-asset-item>
+        <a-asset-item id="temple-model" src="../ar-models/temple-of-heaven-mobile-lite.glb"></a-asset-item>
       </a-assets>
 
       <a-marker
@@ -525,14 +525,9 @@
         }
 
         function getViewportSize() {
-          const viewport = window.visualViewport;
           const docEl = document.documentElement;
-          const width = viewport
-            ? Math.round(viewport.width)
-            : Math.max(window.innerWidth || 0, docEl ? docEl.clientWidth : 0);
-          const height = viewport
-            ? Math.round(viewport.height)
-            : Math.max(window.innerHeight || 0, docEl ? docEl.clientHeight : 0);
+          const width = Math.max(window.innerWidth || 0, docEl ? docEl.clientWidth : 0);
+          const height = Math.max(window.innerHeight || 0, docEl ? docEl.clientHeight : 0);
 
           return {
             width: Math.max(1, width),
@@ -549,12 +544,6 @@
 
           document.documentElement.style.setProperty('--cq-vw', viewportWidth + 'px');
           document.documentElement.style.setProperty('--cq-vh', viewportHeight + 'px');
-          document.documentElement.style.width = viewportWidth + 'px';
-          document.documentElement.style.height = viewportHeight + 'px';
-          document.documentElement.style.minHeight = viewportHeight + 'px';
-          document.body.style.width = viewportWidth + 'px';
-          document.body.style.height = viewportHeight + 'px';
-          document.body.style.minHeight = viewportHeight + 'px';
 
           if (!video) {
             pushDebug('video element not ready yet');
@@ -636,11 +625,6 @@
           if (scene.renderer && scene.camera) {
             try {
               scene.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-              scene.renderer.setSize(viewportWidth, viewportHeight, false);
-              if (scene.canvas) {
-                scene.canvas.width = viewportWidth;
-                scene.canvas.height = viewportHeight;
-              }
             } catch {
               // Keep the stable AR baseline even if some devices reject manual sync.
             }
@@ -757,16 +741,22 @@
         }
 
         function updateNarrativeAnchorPosition() {
-          if (!markerVisible || !narrativeAnchor || !scene.camera) {
+          if (
+            !markerVisible ||
+            !modelReady ||
+            !narrativeAnchor ||
+            !scene.camera ||
+            !model.getObject3D('mesh')
+          ) {
             if (narrativeAnchor) {
               narrativeAnchor.classList.remove('visible');
             }
             return;
           }
 
-          const viewport = window.visualViewport;
-          const viewportWidth = viewport ? viewport.width : window.innerWidth;
-          const viewportHeight = viewport ? viewport.height : window.innerHeight;
+          const viewportSize = getViewportSize();
+          const viewportWidth = viewportSize.width;
+          const viewportHeight = viewportSize.height;
           const three = AFRAME.THREE;
           const topWorldPos = new three.Vector3(
             0,
@@ -790,6 +780,23 @@
           topWorldPos.project(scene.camera);
           sideWorldPos.project(scene.camera);
           centerWorldPos.project(scene.camera);
+
+          const points = [topWorldPos, sideWorldPos, centerWorldPos];
+          const inView = points.every(function (point) {
+            return Number.isFinite(point.x) && Number.isFinite(point.y) && Number.isFinite(point.z);
+          });
+          const topVisible =
+            topWorldPos.z >= -1 &&
+            topWorldPos.z <= 1 &&
+            topWorldPos.x >= -1.3 &&
+            topWorldPos.x <= 1.3 &&
+            topWorldPos.y >= -1.3 &&
+            topWorldPos.y <= 1.3;
+
+          if (!inView || !topVisible) {
+            narrativeAnchor.classList.remove('visible');
+            return;
+          }
 
           const topX = (topWorldPos.x * 0.5 + 0.5) * viewportWidth;
           const topY = (-topWorldPos.y * 0.5 + 0.5) * viewportHeight;
@@ -987,9 +994,6 @@
         window.requestAnimationFrame(animationTick);
         window.addEventListener('resize', ensureLayersVisible);
         window.addEventListener('orientationchange', ensureLayersVisible);
-        if (window.visualViewport) {
-          window.visualViewport.addEventListener('resize', ensureLayersVisible);
-        }
         window.setTimeout(function () {
           if (!trackedVideo) {
             pushDebug('watchdog: no video after 4s');

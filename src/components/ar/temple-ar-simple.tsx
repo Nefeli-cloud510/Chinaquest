@@ -53,6 +53,7 @@ export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
   const [arState, setARState] = useState<ARState>('welcome');
   const [debugInfo, setDebugInfo] = useState(labels.cameraHint.zh);
   const [sessionToken, setSessionToken] = useState(() => Date.now());
+  const [debugMode, setDebugMode] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const hasTriggeredDetectedRef = useRef(false);
@@ -73,11 +74,18 @@ export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
   };
 
   useEffect(() => {
+    try {
+      setDebugMode(new URLSearchParams(window.location.search).get('debug') === '1');
+    } catch {
+      setDebugMode(false);
+    }
+  }, []);
+
+  useEffect(() => {
     const urls = [
       withBasePath('/ar/hiro-temple.html'),
       withBasePath('/vendor/aframe/aframe.min.js'),
       withBasePath('/vendor/arjs/aframe-ar.js'),
-      withBasePath('/ar-models/temple-of-heaven-mobile.glb'),
       withBasePath('/ar/patterns/pattern-temple_of_heaven_hiro.patt'),
     ];
 
@@ -87,9 +95,6 @@ export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
       link.href = href;
       if (href.endsWith('.js')) {
         link.as = 'script';
-      } else if (href.endsWith('.glb')) {
-        link.as = 'fetch';
-        link.crossOrigin = 'anonymous';
       } else {
         link.as = 'fetch';
       }
@@ -179,7 +184,7 @@ export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
     onClose();
   };
 
-  const iframeSrc = `${withBasePath('/ar/hiro-temple.html')}?lang=${language}&session=${sessionToken}`;
+  const iframeSrc = `${withBasePath('/ar/hiro-temple.html')}?lang=${language}&session=${sessionToken}${debugMode ? '&debug=1' : ''}`;
 
   if (arState === 'loading' || arState === 'welcome' || arState === 'error') {
     return (
