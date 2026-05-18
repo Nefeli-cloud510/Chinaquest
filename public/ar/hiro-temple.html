@@ -208,7 +208,7 @@
             gltf-model="#temple-model"
             position="0 0 0"
             rotation="-90 180 180"
-            scale="0.00056 0.00056 0.00056"
+            scale="0.00072 0.00072 0.00072"
           ></a-entity>
         </a-entity>
       </a-marker>
@@ -239,12 +239,13 @@
         const narrativeTitle = document.getElementById('narrative-title');
         const narrativeText = document.getElementById('narrative-text');
         const narrativeTip = document.getElementById('narrative-tip');
-        const DEFAULT_SCALE = 0.00056;
+        const DEFAULT_SCALE = 0.00072;
         const SCALE_STORAGE_KEY = 'chinaquest.temple-ar.scale';
         const SCALE_MIN = 0.0002;
         const SCALE_MAX = 0.0018;
         const BASE_ROTATION = { x: -90, y: 180, z: 180 };
         const MODEL_HEIGHT = 1812.66619873;
+        const MODEL_WIDTH = 3254.69506836;
         const ENTRY_RISE = 0.18;
         const ENTRY_DURATION_MS = 2000;
         const HIDDEN_MESHES = new Set(['Di_mian04']);
@@ -471,30 +472,16 @@
         function getViewportSize() {
           const viewport = window.visualViewport;
           const docEl = document.documentElement;
-          const screenWidth = window.screen
-            ? Math.max(window.screen.width || 0, window.screen.availWidth || 0)
-            : 0;
-          const screenHeight = window.screen
-            ? Math.max(window.screen.height || 0, window.screen.availHeight || 0)
-            : 0;
-          const widthCandidates = [
-            window.innerWidth,
-            docEl ? docEl.clientWidth : 0,
-            viewport ? Math.round(viewport.width) : 0,
-            viewport ? Math.round(viewport.width + viewport.offsetLeft) : 0,
-            screenWidth,
-          ].filter(Boolean);
-          const heightCandidates = [
-            window.innerHeight,
-            docEl ? docEl.clientHeight : 0,
-            viewport ? Math.round(viewport.height) : 0,
-            viewport ? Math.round(viewport.height + viewport.offsetTop) : 0,
-            screenHeight,
-          ].filter(Boolean);
+          const width = viewport
+            ? Math.round(viewport.width)
+            : Math.max(window.innerWidth || 0, docEl ? docEl.clientWidth : 0);
+          const height = viewport
+            ? Math.round(viewport.height)
+            : Math.max(window.innerHeight || 0, docEl ? docEl.clientHeight : 0);
 
           return {
-            width: Math.max.apply(null, widthCandidates),
-            height: Math.max.apply(null, heightCandidates),
+            width: Math.max(1, width),
+            height: Math.max(1, height),
           };
         }
 
@@ -580,13 +567,6 @@
               if (scene.canvas) {
                 scene.canvas.width = viewportWidth;
                 scene.canvas.height = viewportHeight;
-              }
-              if (
-                typeof scene.camera.aspect === 'number' &&
-                typeof scene.camera.updateProjectionMatrix === 'function'
-              ) {
-                scene.camera.aspect = viewportWidth / Math.max(viewportHeight, 1);
-                scene.camera.updateProjectionMatrix();
               }
             } catch {
               // Keep the stable AR baseline even if some devices reject manual sync.
@@ -699,18 +679,49 @@
           const viewportWidth = viewport ? viewport.width : window.innerWidth;
           const viewportHeight = viewport ? viewport.height : window.innerHeight;
           const three = AFRAME.THREE;
-          const worldPos = new three.Vector3(
+          const topWorldPos = new three.Vector3(
             0,
-            MODEL_HEIGHT * Math.max(currentScale, preferredScale * 0.25) + 0.005,
+            MODEL_HEIGHT + 42,
             0
           );
-          model.object3D.localToWorld(worldPos);
-          worldPos.project(scene.camera);
+          const sideWorldPos = new three.Vector3(
+            MODEL_WIDTH * 0.36,
+            MODEL_HEIGHT * 0.72,
+            0
+          );
+          const centerWorldPos = new three.Vector3(
+            0,
+            MODEL_HEIGHT * 0.55,
+            0
+          );
 
-          const x = (worldPos.x * 0.5 + 0.5) * viewportWidth;
-          const y = (-worldPos.y * 0.5 + 0.5) * viewportHeight;
-          narrativeAnchor.style.left = `${x}px`;
-          narrativeAnchor.style.top = `${y}px`;
+          model.object3D.localToWorld(topWorldPos);
+          model.object3D.localToWorld(sideWorldPos);
+          model.object3D.localToWorld(centerWorldPos);
+          topWorldPos.project(scene.camera);
+          sideWorldPos.project(scene.camera);
+          centerWorldPos.project(scene.camera);
+
+          const topX = (topWorldPos.x * 0.5 + 0.5) * viewportWidth;
+          const topY = (-topWorldPos.y * 0.5 + 0.5) * viewportHeight;
+          const sideX = (sideWorldPos.x * 0.5 + 0.5) * viewportWidth;
+          const centerX = (centerWorldPos.x * 0.5 + 0.5) * viewportWidth;
+          const direction = sideX >= centerX ? 1 : -1;
+          const horizontalOffset = Math.max(28, viewportWidth * 0.035);
+          const verticalOffset = Math.max(18, viewportHeight * 0.02);
+          const anchorX = Math.min(
+            viewportWidth - 12,
+            Math.max(12, topX + direction * horizontalOffset)
+          );
+          const anchorY = Math.min(
+            viewportHeight - 12,
+            Math.max(12, topY - verticalOffset)
+          );
+
+          narrativeAnchor.style.left = `${anchorX}px`;
+          narrativeAnchor.style.top = `${anchorY}px`;
+          narrativeAnchor.style.transform =
+            direction > 0 ? 'translate(0, -100%)' : 'translate(-100%, -100%)';
         }
 
         function animationTick() {
