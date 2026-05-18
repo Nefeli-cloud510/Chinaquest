@@ -234,10 +234,6 @@
       renderer="antialias: false; alpha: true;"
       arjs="trackingMethod: best; sourceType: webcam; debugUIEnabled: false; detectionMode: mono;"
     >
-      <a-assets>
-        <a-asset-item id="temple-model" src="../ar-models/temple-of-heaven-mobile-plain.glb"></a-asset-item>
-      </a-assets>
-
       <a-marker
         id="hiro-marker"
         type="pattern"
@@ -256,7 +252,7 @@
         >
           <a-entity
             id="temple-entity"
-            gltf-model="#temple-model"
+            gltf-model="../ar-models/temple-of-heaven-mobile-plain.glb"
             position="0 0 0"
             rotation="-90 180 180"
             scale="0.00072 0.00072 0.00072"
@@ -750,10 +746,8 @@
         function updateNarrativeAnchorPosition() {
           if (
             !markerVisible ||
-            !modelReady ||
             !narrativeAnchor ||
-            !scene.camera ||
-            !model.getObject3D('mesh')
+            !scene.camera
           ) {
             if (narrativeAnchor) {
               narrativeAnchor.classList.remove('visible');
