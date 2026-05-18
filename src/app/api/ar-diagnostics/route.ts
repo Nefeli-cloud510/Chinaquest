@@ -56,20 +56,25 @@ function formatBlock(payload: DiagnosticsPayload) {
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    const payload = (await request.json()) as DiagnosticsPayload;
-    const targetDir = 'D:\\chinaquest_material';
-    const targetFile = path.join(targetDir, 'ar-diagnostics-log.txt');
+  const payload = (await request.json()) as DiagnosticsPayload;
+  const targetDir = 'D:\\chinaquest_material';
+  const fallbackDir = process.cwd();
+  const targetFile = path.join(targetDir, 'ar-diagnostics-log.txt');
+  const fallbackFile = path.join(fallbackDir, 'ar-diagnostics-log.txt');
 
+  try {
     await mkdir(targetDir, { recursive: true });
     await appendFile(targetFile, formatBlock(payload), 'utf8');
 
     return NextResponse.json({ success: true, file: targetFile });
   } catch (error) {
-    console.error('AR diagnostics write error:', error);
-    return NextResponse.json(
-      { success: false, message: 'Failed to write AR diagnostics log.' },
-      { status: 500 }
-    );
+    try {
+      await appendFile(fallbackFile, formatBlock(payload), 'utf8');
+      return NextResponse.json({ success: true, file: fallbackFile, fallback: true });
+    } catch (fallbackError) {
+      console.error('AR diagnostics write error:', error);
+      console.error('AR diagnostics fallback write error:', fallbackError);
+      return NextResponse.json({ success: false, skipped: true });
+    }
   }
 }

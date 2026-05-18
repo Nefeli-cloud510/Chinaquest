@@ -270,11 +270,7 @@
         let markerVisible = false;
         let hasPlayedEntryAnimation = false;
         let isEntryAnimationRunning = false;
-        let lastDiagnosticsSignature = '';
-        let lastDiagnosticsAt = 0;
-        const SHOULD_REPORT_DIAGNOSTICS = /^(localhost|127\.0\.0\.1)$/i.test(
-          window.location.hostname
-        );
+        const SHOULD_REPORT_DIAGNOSTICS = false;
 
         function emit(type, detail) {
           if (window.parent && window.parent !== window) {
@@ -390,29 +386,10 @@
           }
 
           try {
-            const payload = collectDiagnostics(trigger, viewportWidth, viewportHeight);
-            const signature = JSON.stringify({
-              trigger: payload.trigger,
-              target: payload.target,
-              inner: payload.inner,
-              viewport: payload.viewport,
-              document: payload.document,
-              video: payload.video,
-              canvas: payload.canvas,
-            });
-            const now = Date.now();
-
-            if (signature === lastDiagnosticsSignature && now - lastDiagnosticsAt < 2000) {
-              return;
-            }
-
-            lastDiagnosticsSignature = signature;
-            lastDiagnosticsAt = now;
-
             fetch('/api/ar-diagnostics', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload),
+              body: JSON.stringify(collectDiagnostics(trigger, viewportWidth, viewportHeight)),
               keepalive: true,
             }).catch(function () {
               // Keep AR stable even if diagnostics upload fails.
