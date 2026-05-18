@@ -73,6 +73,36 @@ export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
   };
 
   useEffect(() => {
+    const urls = [
+      withBasePath('/ar/hiro-temple.html'),
+      withBasePath('/vendor/aframe/aframe.min.js'),
+      withBasePath('/vendor/arjs/aframe-ar.js'),
+      withBasePath('/ar-models/temple-of-heaven.glb'),
+      withBasePath('/ar/patterns/pattern-temple_of_heaven_hiro.patt'),
+    ];
+
+    const links = urls.map((href) => {
+      const link = document.createElement('link');
+      link.rel = 'preload';
+      link.href = href;
+      if (href.endsWith('.js')) {
+        link.as = 'script';
+      } else if (href.endsWith('.glb')) {
+        link.as = 'fetch';
+        link.crossOrigin = 'anonymous';
+      } else {
+        link.as = 'fetch';
+      }
+      document.head.appendChild(link);
+      return link;
+    });
+
+    return () => {
+      links.forEach((link) => link.remove());
+    };
+  }, []);
+
+  useEffect(() => {
     window.dispatchEvent(
       new CustomEvent('chinaquest-ar-visibility', { detail: { hidden: true } })
     );

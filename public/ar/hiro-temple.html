@@ -321,6 +321,7 @@
         let narrativeIndex = -1;
         let currentBubbleSide = 'right';
         let markerVisible = false;
+        let modelReady = false;
         let hasPlayedEntryAnimation = false;
         let isEntryAnimationRunning = false;
         const SHOULD_REPORT_DIAGNOSTICS = false;
@@ -735,6 +736,22 @@
 
             if (HIDDEN_MESHES.has(obj.name)) {
               obj.visible = false;
+              return;
+            }
+
+            obj.frustumCulled = false;
+            if (obj.material) {
+              if (Array.isArray(obj.material)) {
+                obj.material.forEach(function (material) {
+                  if (material) {
+                    material.side = AFRAME.THREE.DoubleSide;
+                    material.needsUpdate = true;
+                  }
+                });
+              } else {
+                obj.material.side = AFRAME.THREE.DoubleSide;
+                obj.material.needsUpdate = true;
+              }
             }
           });
         }
@@ -865,9 +882,13 @@
           markerVisible = true;
           ensureLayersVisible();
           setStatus(
-            currentLanguage === 'zh'
-              ? '已识别到天坛标记。模型已贴合 marker，点击天坛气泡可开始对话。'
-              : 'Temple marker detected. Tap the model to start the dialogue.'
+            modelReady
+              ? currentLanguage === 'zh'
+                ? '已识别到天坛标记。模型已贴合 marker，点击天坛气泡可开始对话。'
+                : 'Temple marker detected. Tap the model to start the dialogue.'
+              : currentLanguage === 'zh'
+                ? '已识别到天坛标记，模型仍在加载中，请保持画面稳定。'
+                : 'Temple marker detected. The model is still loading, please hold steady.'
           );
           if (modelWrapper) {
             if (!hasPlayedEntryAnimation) {
@@ -894,9 +915,11 @@
 
         model.addEventListener('model-loaded', function () {
           pushDebug('model-loaded');
+          modelReady = true;
           const meshRoot = model.getObject3D('mesh');
           if (meshRoot) {
             hideUnwantedMeshes(meshRoot);
+            meshRoot.visible = true;
           }
 
           applyScale(preferredScale, false);
@@ -905,9 +928,13 @@
             modelWrapper.setAttribute('visible', markerVisible ? 'true' : 'false');
           }
           setStatus(
-            currentLanguage === 'zh'
-              ? '天坛模型已加载。当前使用底部中心轴心，position 为 0 0 0，并恢复白玉栅栏底座。'
-              : 'Temple model loaded. After recognition, tap the model to start the dialogue and use the left controls to scale it.'
+            markerVisible
+              ? currentLanguage === 'zh'
+                ? '天坛模型已加载并显示。点击漫画气泡可开始对话。'
+                : 'Temple model loaded and displayed. Tap the bubble to start the dialogue.'
+              : currentLanguage === 'zh'
+                ? '天坛模型已加载。请将识别图放入画面中。'
+                : 'Temple model loaded. Point the camera at the marker.'
           );
           emit('model-loaded');
         });
