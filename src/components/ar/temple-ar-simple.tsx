@@ -77,7 +77,7 @@ export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
       withBasePath('/ar/hiro-temple.html'),
       withBasePath('/vendor/aframe/aframe.min.js'),
       withBasePath('/vendor/arjs/aframe-ar.js'),
-      withBasePath('/ar-models/temple-of-heaven.glb'),
+      withBasePath('/ar-models/temple-of-heaven-mobile.glb'),
       withBasePath('/ar/patterns/pattern-temple_of_heaven_hiro.patt'),
     ];
 
