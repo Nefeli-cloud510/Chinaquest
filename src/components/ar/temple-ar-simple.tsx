@@ -35,6 +35,10 @@ const labels = {
     zh: '天坛模型已加载；识别成功后会显示模型，并可点击开始对话。',
     en: 'Temple model loaded. The model will appear after recognition, and you can tap to start the dialogue.',
   },
+  modelFailed: {
+    zh: '天坛模型未成功载入；识别仍可能成功，但模型不会显示。',
+    en: 'The Temple model failed to load. Recognition may still succeed, but the model will not appear.',
+  },
   loadFailed: { zh: 'AR 页面加载失败，请刷新重试。', en: 'AR page failed to load. Please refresh and retry.' },
   cameraHint: {
     zh: '如果没有弹出相机权限，请检查浏览器地址栏中的摄像头授权。',
@@ -148,7 +152,13 @@ export function TempleARSimple({ onDetected, onClose }: TempleARSimpleProps) {
           break;
         case 'error':
           setARState('error');
-          setDebugInfo(typeof data.detail === 'string' ? data.detail : labels.loadFailed[language]);
+          setDebugInfo(
+            data.detail === 'Temple model failed to load.'
+              ? labels.modelFailed[language]
+              : typeof data.detail === 'string'
+                ? data.detail
+                : labels.loadFailed[language]
+          );
           break;
         default:
           break;
