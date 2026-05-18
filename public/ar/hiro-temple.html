@@ -71,11 +71,11 @@
         left: 12px;
         right: 12px;
         z-index: 10000;
-        padding: 10px 12px;
-        border-radius: 12px;
-        background: rgba(0, 0, 0, 0.62);
+        padding: 8px 10px;
+        border-radius: 10px;
+        background: rgba(0, 0, 0, 0.48);
         color: #fff;
-        font: 13px/1.4 Arial, sans-serif;
+        font: 12px/1.35 Arial, sans-serif;
       }
 
       .debug-log {
@@ -93,6 +93,11 @@
         font: 11px/1.45 Consolas, Monaco, monospace;
         white-space: pre-wrap;
         pointer-events: none;
+        display: none;
+      }
+
+      .debug-log.visible {
+        display: block;
       }
 
       .scale-controls {
@@ -105,13 +110,13 @@
       }
 
       .scale-controls button {
-        width: 44px;
-        height: 44px;
+        width: 38px;
+        height: 38px;
         border: 0;
         border-radius: 999px;
-        background: rgba(0, 0, 0, 0.62);
+        background: rgba(0, 0, 0, 0.48);
         color: #fff;
-        font: 600 18px/1 Arial, sans-serif;
+        font: 600 15px/1 Arial, sans-serif;
         cursor: pointer;
       }
 
@@ -132,25 +137,50 @@
 
       .narrative-prompt,
       .narrative-bubble {
-        border-radius: 18px;
-        background: rgba(17, 24, 39, 0.9);
-        color: #fff;
-        box-shadow: 0 18px 40px rgba(0, 0, 0, 0.24);
-        backdrop-filter: blur(8px);
-        -webkit-backdrop-filter: blur(8px);
+        position: relative;
+        border-radius: 16px;
+        background: rgba(255, 255, 255, 0.94);
+        color: #111827;
+        border: 1px solid rgba(17, 24, 39, 0.08);
+        box-shadow: 0 14px 32px rgba(0, 0, 0, 0.18);
       }
 
       .narrative-prompt {
         display: none;
-        padding: 15px 20px;
-        border: 1px solid rgba(255, 255, 255, 0.14);
-        font: 600 17px/1.45 Arial, sans-serif;
+        padding: 10px 14px;
+        font: 600 13px/1.4 Arial, sans-serif;
       }
 
       .narrative-bubble {
         display: none;
-        padding: 20px 22px;
-        border: 1px solid rgba(245, 158, 11, 0.28);
+        min-width: min(180px, calc(100vw - 32px));
+        max-width: min(260px, calc(100vw - 32px));
+        padding: 12px 14px;
+      }
+
+      .narrative-prompt::after,
+      .narrative-bubble::after {
+        content: '';
+        position: absolute;
+        bottom: 12px;
+        width: 12px;
+        height: 12px;
+        background: rgba(255, 255, 255, 0.94);
+        border-bottom: 1px solid rgba(17, 24, 39, 0.08);
+      }
+
+      .narrative-anchor.side-left .narrative-prompt::after,
+      .narrative-anchor.side-left .narrative-bubble::after {
+        right: -6px;
+        border-right: 1px solid rgba(17, 24, 39, 0.08);
+        transform: rotate(45deg);
+      }
+
+      .narrative-anchor.side-right .narrative-prompt::after,
+      .narrative-anchor.side-right .narrative-bubble::after {
+        left: -6px;
+        border-left: 1px solid rgba(17, 24, 39, 0.08);
+        transform: rotate(45deg);
       }
 
       .narrative-prompt.visible,
@@ -159,19 +189,22 @@
       }
 
       .narrative-title {
-        font: 600 17px/1.2 Arial, sans-serif;
-        color: #fbbf24;
+        font: 600 12px/1.2 Arial, sans-serif;
+        color: #b45309;
+        text-transform: uppercase;
+        letter-spacing: 0.04em;
       }
 
       .narrative-text {
-        margin-top: 8px;
-        font: 17px/1.62 Arial, sans-serif;
+        margin-top: 6px;
+        color: #111827;
+        font: 14px/1.55 Arial, sans-serif;
       }
 
       .narrative-tip {
-        margin-top: 10px;
-        font: 15px/1.45 Arial, sans-serif;
-        color: rgba(255, 255, 255, 0.68);
+        margin-top: 8px;
+        font: 11px/1.35 Arial, sans-serif;
+        color: rgba(17, 24, 39, 0.6);
       }
     </style>
   </head>
@@ -286,10 +319,12 @@
         let currentScale = DEFAULT_SCALE;
         let currentLanguage = 'en';
         let narrativeIndex = -1;
+        let currentBubbleSide = 'right';
         let markerVisible = false;
         let hasPlayedEntryAnimation = false;
         let isEntryAnimationRunning = false;
         const SHOULD_REPORT_DIAGNOSTICS = false;
+        const DEBUG_ENABLED = new URLSearchParams(window.location.search).get('debug') === '1';
         const debugLines = [];
         let trackedVideo = null;
 
@@ -315,6 +350,10 @@
         }
 
         function pushDebug(message) {
+          if (!DEBUG_ENABLED) {
+            return;
+          }
+
           const timestamp = new Date().toISOString().slice(11, 19);
           const line = `[${timestamp}] ${message}`;
           debugLines.push(line);
@@ -444,6 +483,8 @@
           }
 
           const shouldShowAnchor = showPrompt || showBubble;
+          narrativeAnchor.classList.toggle('side-left', currentBubbleSide === 'left');
+          narrativeAnchor.classList.toggle('side-right', currentBubbleSide === 'right');
           narrativeAnchor.classList.toggle('visible', shouldShowAnchor);
           narrativePrompt.classList.toggle('visible', showPrompt);
           narrativeBubble.classList.toggle('visible', showBubble);
@@ -451,6 +492,7 @@
 
         function resetNarrative() {
           narrativeIndex = -1;
+          currentBubbleSide = 'right';
           setNarrativeVisibility(false, false);
         }
 
@@ -461,6 +503,7 @@
 
           const lines = narrativeLines[currentLanguage];
           narrativeIndex = Math.min(narrativeIndex + 1, lines.length - 1);
+          currentBubbleSide = narrativeIndex % 2 === 0 ? 'left' : 'right';
           if (narrativeTitle) {
             narrativeTitle.textContent = currentLanguage === 'zh' ? '天坛' : 'Temple of Heaven';
           }
@@ -735,7 +778,14 @@
           const topY = (-topWorldPos.y * 0.5 + 0.5) * viewportHeight;
           const sideX = (sideWorldPos.x * 0.5 + 0.5) * viewportWidth;
           const centerX = (centerWorldPos.x * 0.5 + 0.5) * viewportWidth;
-          const direction = sideX >= centerX ? 1 : -1;
+          const direction =
+            currentBubbleSide === 'left'
+              ? -1
+              : currentBubbleSide === 'right'
+                ? 1
+                : sideX >= centerX
+                  ? 1
+                  : -1;
           const horizontalOffset = Math.max(28, viewportWidth * 0.035);
           const verticalOffset = Math.max(18, viewportHeight * 0.02);
           const anchorX = Math.min(
@@ -764,6 +814,9 @@
           });
         }
 
+        if (debugLogPanel) {
+          debugLogPanel.classList.toggle('visible', DEBUG_ENABLED);
+        }
         pushDebug('script booted');
         pushDebug(window.AFRAME ? 'AFRAME ready' : 'AFRAME missing');
 
@@ -849,7 +902,7 @@
           applyScale(preferredScale, false);
           applyBaseRotation(0);
           if (modelWrapper) {
-            modelWrapper.setAttribute('visible', 'false');
+            modelWrapper.setAttribute('visible', markerVisible ? 'true' : 'false');
           }
           setStatus(
             currentLanguage === 'zh'
